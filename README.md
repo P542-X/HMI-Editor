@@ -61,6 +61,10 @@ js/                        modules, loaded in numeric order
   30_demo.js                 sample screen and welcome dialog of the public demo
 ```
 
+## License
+
+Free to use, study, modify and share. **You may not sell it**, nor sell a modified version or a paid service whose value comes mainly from it. See [LICENSE](LICENSE): MIT with the Commons Clause condition.
+
 ## Author
 
 Paulo Carrasco · [paulocarrasco.dev](https://paulocarrasco.dev) · [LinkedIn](https://www.linkedin.com/in/paulocarrasco542)
