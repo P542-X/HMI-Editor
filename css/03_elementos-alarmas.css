@@ -1,0 +1,74 @@
+/* ══════════════════════════════════════════════
+   ALARMAS
+══════════════════════════════════════════════ */
+.halarm-banner {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; gap: 11px;
+  padding: 0 14px;
+  border-radius: 3px;
+  border: 2px solid #c62828;
+  background: #fff5f5;
+  position: relative; overflow: hidden;
+}
+.halarm-banner.off { border-color: #d8d8d0; background: #f9f9f7; }
+.halarm-banner-stripe {
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(
+    45deg, transparent, transparent 6px,
+    rgba(198,40,40,.05) 6px, rgba(198,40,40,.05) 12px
+  );
+}
+.halarm-ico { font-size: 18px; flex-shrink: 0; }
+.halarm-lbl { flex: 1; overflow: hidden; }
+.halarm-main { font-weight: 700; letter-spacing: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #c62828; }
+.halarm-sub  { font-size: 9px; color: #9a9a90; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.halarm-banner.off .halarm-main { color: #9a9a92; }
+.halarm-dot  { width: 8px; height: 8px; border-radius: 50%; background: #c62828; flex-shrink: 0; }
+.halarm-banner.off .halarm-dot { background: #d0d0c8; }
+
+.halarm-list {
+  width: 100%; height: 100%;
+  background: #fff; border: 1px solid #d8d8d0;
+  border-radius: 3px; display: flex;
+  flex-direction: column; overflow: hidden;
+}
+.halarm-list-hdr {
+  padding: 5px 10px;
+  border-bottom: 1px solid #e8e8e0;
+  display: flex; align-items: center; gap: 7px;
+  background: #fff5f5; flex-shrink: 0;
+}
+.halarm-list-title { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 2px; color: #c62828; flex: 1; font-weight: 600; }
+.halarm-list-cnt   { font-family: "DM Mono", monospace; font-size: 8px; color: #9a9a90; background: #f0f0ec; border-radius: 8px; padding: 1px 7px; }
+.halarm-list-body  { flex: 1; overflow: hidden; }
+.halarm-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 10px; border-bottom: 1px solid #f0f0ec;
+  font-size: 10px;
+}
+.halarm-row.active { background: #fff8f8; }
+.halarm-row-dot  { width: 6px; height: 6px; border-radius: 50%; background: #d0d0c8; flex-shrink: 0; }
+.halarm-row.active .halarm-row-dot { background: #c62828; }
+.halarm-row-lbl  { flex: 1; font-family: "DM Mono", monospace; color: #9a9a90; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.halarm-row.active .halarm-row-lbl { color: #1a1a16; font-weight: 500; }
+.halarm-row-time { font-family: "DM Mono", monospace; font-size: 8px; color: #b0b0a8; flex-shrink: 0; }
+
+.halarm-ack {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 12px;
+  border-radius: 3px;
+  background: #f5f5f3; border: 1px solid #d8d8d0;
+  font-family: "DM Sans", sans-serif; font-weight: 600;
+  cursor: default; position: relative;
+}
+.halarm-ack.pending { background: #fff8e1; border-color: #f9a825; }
+.halarm-ack-ico { font-size: 14px; flex-shrink: 0; }
+.halarm-ack-lbl { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.halarm-ack-badge {
+  font-family: "DM Mono", monospace; font-size: 8px;
+  padding: 2px 7px; border-radius: 8px;
+  background: rgba(0,0,0,.08); color: #9a9a90;
+  flex-shrink: 0; letter-spacing: 1px;
+}
+

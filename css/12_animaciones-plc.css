@@ -1,0 +1,870 @@
+/* =================================================================
+   12_animaciones-plc.css — Animaciones de estado PLC (iluminación)
+================================================================= */
+
+/* ── Keyframes ─────────────────────────────────────────────── */
+@keyframes plc-glow-verde  {
+  0%,100% { filter: drop-shadow(0 0 2px #00e676) drop-shadow(0 0 6px #00c853); opacity:1;  }
+  50%      { filter: drop-shadow(0 0 8px #00e676) drop-shadow(0 0 18px #00c853); opacity:.85; }
+}
+@keyframes plc-glow-ambar  {
+  0%,100% { filter: drop-shadow(0 0 2px #f9a825) drop-shadow(0 0 6px #c07800); opacity:1;  }
+  50%      { filter: drop-shadow(0 0 8px #ffca28) drop-shadow(0 0 18px #f9a825); opacity:.85; }
+}
+@keyframes plc-glow-azul   {
+  0%,100% { filter: drop-shadow(0 0 2px #29b6f6) drop-shadow(0 0 6px #0288d1); opacity:1;  }
+  50%      { filter: drop-shadow(0 0 8px #81d4fa) drop-shadow(0 0 18px #29b6f6); opacity:.85; }
+}
+@keyframes plc-glow-rojo   {
+  0%,100% { filter: drop-shadow(0 0 2px #ef5350) drop-shadow(0 0 6px #c62828); opacity:1;  }
+  50%      { filter: drop-shadow(0 0 8px #ef9a9a) drop-shadow(0 0 18px #ef5350); opacity:.8;  }
+}
+@keyframes plc-glow-blanco {
+  0%,100% { filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 8px #f9a825); opacity:1;  }
+  50%      { filter: drop-shadow(0 0 12px #fff) drop-shadow(0 0 24px #f9a825); opacity:.9; }
+}
+@keyframes plc-glow-cyan   {
+  0%,100% { filter: drop-shadow(0 0 2px #00e5ff) drop-shadow(0 0 6px #00acc1); opacity:1;  }
+  50%      { filter: drop-shadow(0 0 8px #80deea) drop-shadow(0 0 18px #00e5ff); opacity:.85; }
+}
+
+/* Luz indicadora parpadeante (punto de color) */
+@keyframes plc-blink-dot {
+  0%,49%  { opacity: 1;   transform: scale(1);   }
+  50%,100%{ opacity: 0.1; transform: scale(0.7); }
+}
+@keyframes plc-pulse-dot {
+  0%,100% { opacity: 1;   box-shadow: 0 0 0 0 currentColor; }
+  50%     { opacity: 0.9; box-shadow: 0 0 0 5px transparent; }
+}
+
+/* ── Badge "ACTIVO" ─────────────────────────────────────────── */
+.hel.plc-activo::after {
+  content: "▶ ON";
+  position: absolute;
+  top: -15px; left: 0;
+  font-family: "DM Mono", monospace;
+  font-size: 7px; letter-spacing: 1px;
+  color: #00c853;
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
+}
+
+/* ── Luz indicadora ─────────────────────────────────────────── */
+/* Aparece como un punto brillante sobre el elemento cuando PLC activo */
+.hel.plc-activo[data-cat-anim]::before {
+  content: "";
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  top: 4px; right: 4px;
+  z-index: 30;
+  pointer-events: none;
+  animation: plc-pulse-dot 1s ease-in-out infinite;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   AUTO / FAB — GLOW VERDE (motores, robots, máquinas en marcha)
+══════════════════════════════════════════════════════════════ */
+.plc-activo[data-tipo="auto-wheel"],
+.plc-activo[data-tipo="auto-tyre"],
+.plc-activo[data-tipo="auto-brake-disc"],
+.plc-activo[data-tipo="auto-robot-arm"],
+.plc-activo[data-tipo="auto-agv"],
+.plc-activo[data-tipo="auto-vin-scanner"],
+.plc-activo[data-tipo="auto-engine"],
+.plc-activo[data-tipo="auto-gearbox"],
+.plc-activo[data-tipo="auto-suspension"],
+.plc-activo[data-tipo="motor-symbol"],
+.plc-activo[data-tipo="pump-symbol"],
+.plc-activo[data-tipo="fab-robot-industrial"],
+.plc-activo[data-tipo="fab-scara-robot"],
+.plc-activo[data-tipo="fab-cobot"],
+.plc-activo[data-tipo="fab-delta-robot"],
+.plc-activo[data-tipo="fab-palletizer"],
+.plc-activo[data-tipo="fab-cnc-machine"],
+.plc-activo[data-tipo="fab-lathe"],
+.plc-activo[data-tipo="fab-drill-press"],
+.plc-activo[data-tipo="fab-hydraulic-press"],
+.plc-activo[data-tipo="fab-cooling-tower"],
+.plc-activo[data-tipo="fab-compressor-ind"],
+.plc-activo[data-tipo="fab-generator"],
+.plc-activo[data-tipo="fab-extruder"],
+.plc-activo[data-tipo="fab-winding-machine"],
+.plc-activo[data-tipo="fab-injection-mold"],
+.plc-activo[data-tipo="fab-3d-printer"],
+.plc-activo[data-tipo="fab-agv-station"],
+.plc-activo[data-tipo="fab-packaging"],
+.plc-activo[data-tipo="fab-quality-station"] {
+  animation: plc-glow-verde 1.6s ease-in-out infinite;
+}
+
+/* Motor P&ID — además el LED interno se pone verde */
+.plc-activo[data-tipo="motor-symbol"] .hmotor-dot {
+  background: #00e676 !important;
+  box-shadow: 0 0 8px #00c853;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SOLDADURA / LÁSER — GLOW BLANCO/AMARILLO (arco eléctrico)
+══════════════════════════════════════════════════════════════ */
+.plc-activo[data-tipo="auto-spot-weld"],
+.plc-activo[data-tipo="fab-welding-station"] {
+  animation: plc-glow-blanco 0.5s ease-in-out infinite;
+}
+.plc-activo[data-tipo="fab-laser-cutter"] {
+  animation: plc-glow-rojo 0.4s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CALOR / HORNO / CALDERA / PINTURA — GLOW ÁMBAR
+══════════════════════════════════════════════════════════════ */
+.plc-activo[data-tipo="fab-oven-industrial"],
+.plc-activo[data-tipo="fab-boiler"],
+.plc-activo[data-tipo="fab-paint-booth"],
+.plc-activo[data-tipo="auto-paint-gun"],
+.plc-activo[data-tipo="auto-exhaust"] {
+  animation: plc-glow-ambar 2s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   VISIÓN / SCANNER / SENSORES — GLOW AZUL/CYAN
+══════════════════════════════════════════════════════════════ */
+.plc-activo[data-tipo="fab-vision-system"],
+.plc-activo[data-tipo="auto-vin-scanner"],
+.plc-activo[data-tipo="auto-abs-module"] {
+  animation: plc-glow-cyan 1.2s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PLC / CUADROS ELÉCTRICOS — GLOW VERDE RÁPIDO (LEDs parpadean)
+══════════════════════════════════════════════════════════════ */
+.plc-activo[data-tipo="fab-plc-cabinet"],
+.plc-activo[data-tipo="fab-switchboard"],
+.plc-activo[data-tipo="fab-hmi-panel"] {
+  animation: plc-glow-verde 0.8s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CINTA — glow verde + efecto visual en líneas de la cinta
+══════════════════════════════════════════════════════════════ */
+.plc-activo[data-tipo="deco-conveyor"] {
+  animation: plc-glow-verde 1.6s ease-in-out infinite;
+}
+.plc-activo[data-tipo="deco-conveyor"] svg line {
+  stroke-dasharray: 12 8;
+  animation: conveyor-move 0.7s linear infinite;
+}
+@keyframes conveyor-move {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -20px; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   LED / ALARMA / BARRA
+══════════════════════════════════════════════════════════════ */
+.plc-activo[data-tipo="status-led"]    .hstatus     { animation: plc-glow-verde 1s ease-in-out infinite; }
+.plc-activo[data-tipo="alarm-banner"]  .halarm-banner{ animation: plc-glow-rojo  0.6s ease-in-out infinite; }
+.plc-activo[data-tipo="progress-bar"]  .hprogress-fill {
+  animation: plc-glow-azul 1.5s ease-in-out infinite;
+  width: 70% !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   CONSTRUCCIÓN / DECO — LUZ INDICADORA
+   Cada tipo tiene su color de luz según el significado operativo
+══════════════════════════════════════════════════════════════ */
+
+/* — Operario activo → luz verde de actividad — */
+.plc-activo[data-tipo="deco-worker"]::before,
+.plc-activo[data-tipo="deco-person-walk"]::before {
+  background: #00e676;
+  color: #00e676;
+  box-shadow: 0 0 0 2px #00224c, 0 0 10px #00c853;
+  animation: plc-blink-dot 1s ease-in-out infinite;
+}
+.plc-activo[data-tipo="deco-worker"],
+.plc-activo[data-tipo="deco-person-walk"] {
+  animation: plc-glow-verde 2s ease-in-out infinite;
+}
+
+/* — Vehículos en movimiento → baliza ámbar — */
+.plc-activo[data-tipo="deco-forklift"]::before,
+.plc-activo[data-tipo="deco-truck"]::before,
+.plc-activo[data-tipo="deco-dump-truck"]::before,
+.plc-activo[data-tipo="deco-excavator"]::before,
+.plc-activo[data-tipo="deco-bulldozer"]::before,
+.plc-activo[data-tipo="deco-wheelbarrow"]::before {
+  background: #ffca28;
+  color: #ffca28;
+  box-shadow: 0 0 0 2px #3a2800, 0 0 10px #f9a825;
+  animation: plc-blink-dot 0.7s ease-in-out infinite;
+}
+.plc-activo[data-tipo="deco-forklift"],
+.plc-activo[data-tipo="deco-truck"],
+.plc-activo[data-tipo="deco-dump-truck"],
+.plc-activo[data-tipo="deco-excavator"],
+.plc-activo[data-tipo="deco-bulldozer"],
+.plc-activo[data-tipo="deco-wheelbarrow"] {
+  animation: plc-glow-ambar 1.4s ease-in-out infinite;
+}
+
+/* — Grúa / elevador activo → azul operacional — */
+.plc-activo[data-tipo="deco-crane"]::before,
+.plc-activo[data-tipo="deco-elevator"]::before {
+  background: #29b6f6;
+  color: #29b6f6;
+  box-shadow: 0 0 0 2px #00224c, 0 0 10px #0288d1;
+  animation: plc-blink-dot 1.2s ease-in-out infinite;
+}
+.plc-activo[data-tipo="deco-crane"],
+.plc-activo[data-tipo="deco-elevator"] {
+  animation: plc-glow-azul 1.8s ease-in-out infinite;
+}
+
+/* — Mezcladora / compresor → verde máquina en marcha — */
+.plc-activo[data-tipo="deco-cement-mixer"]::before,
+.plc-activo[data-tipo="deco-compressor"]::before {
+  background: #00e676;
+  color: #00e676;
+  box-shadow: 0 0 0 2px #00224c, 0 0 10px #00c853;
+  animation: plc-blink-dot 0.9s ease-in-out infinite;
+}
+.plc-activo[data-tipo="deco-cement-mixer"],
+.plc-activo[data-tipo="deco-compressor"] {
+  animation: plc-glow-verde 1.6s ease-in-out infinite;
+}
+
+/* — Soldadura → destello blanco intenso — */
+.plc-activo[data-tipo="deco-welding"]::before {
+  background: #fff;
+  color: #fff;
+  box-shadow: 0 0 0 2px #1a1a14, 0 0 12px #f9a825, 0 0 20px #fff;
+  animation: plc-blink-dot 0.4s ease-in-out infinite;
+}
+.plc-activo[data-tipo="deco-welding"] {
+  animation: plc-glow-blanco 0.5s ease-in-out infinite;
+}
+
+/* — Peligro eléctrico / barrera → rojo/ámbar de alerta — */
+.plc-activo[data-tipo="deco-electric-hazard"]::before,
+.plc-activo[data-tipo="deco-road-barrier"]::before,
+.plc-activo[data-tipo="deco-cone"]::before {
+  background: #ef5350;
+  color: #ef5350;
+  box-shadow: 0 0 0 2px #3a0000, 0 0 10px #c62828;
+  animation: plc-blink-dot 0.5s ease-in-out infinite;
+}
+.plc-activo[data-tipo="deco-electric-hazard"],
+.plc-activo[data-tipo="deco-road-barrier"],
+.plc-activo[data-tipo="deco-cone"] {
+  animation: plc-glow-rojo 0.8s ease-in-out infinite;
+}
+
+/* — Extintor / salida emergencia / primeros auxilios → rojo alerta — */
+.plc-activo[data-tipo="deco-fire-ext"]::before,
+.plc-activo[data-tipo="deco-safety-exit"]::before,
+.plc-activo[data-tipo="deco-first-aid"]::before {
+  background: #ef5350;
+  color: #ef5350;
+  box-shadow: 0 0 0 2px #3a0000, 0 0 10px #c62828;
+  animation: plc-blink-dot 0.6s ease-in-out infinite;
+}
+.plc-activo[data-tipo="deco-fire-ext"],
+.plc-activo[data-tipo="deco-safety-exit"],
+.plc-activo[data-tipo="deco-first-aid"] {
+  animation: plc-glow-rojo 1s ease-in-out infinite;
+}
+
+/* — Señal casco / EPI → ámbar obligatorio — */
+.plc-activo[data-tipo="deco-sign-hard"]::before,
+.plc-activo[data-tipo="deco-helmet"]::before {
+  background: #ffca28;
+  color: #ffca28;
+  box-shadow: 0 0 0 2px #3a2800, 0 0 10px #f9a825;
+  animation: plc-blink-dot 1s ease-in-out infinite;
+}
+.plc-activo[data-tipo="deco-sign-hard"],
+.plc-activo[data-tipo="deco-helmet"] {
+  animation: plc-glow-ambar 1.5s ease-in-out infinite;
+}
+
+/* — Carrete de cable → cyan (tensión/corriente) — */
+.plc-activo[data-tipo="deco-wire-spool"]::before {
+  background: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 0 2px #00224c, 0 0 10px #0097a7;
+  animation: plc-blink-dot 0.8s ease-in-out infinite;
+}
+.plc-activo[data-tipo="deco-wire-spool"] {
+  animation: plc-glow-cyan 1.2s ease-in-out infinite;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   PANEL SIMULADOR PLC
+══════════════════════════════════════════════════════════════ */
+#plc-sim-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 264px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.55);
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  overflow: hidden;
+}
+#plc-sim-panel.oculto { display: none !important; }
+
+#plc-sim-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--topbar);
+  border-bottom: 1px solid var(--border);
+}
+#plc-sim-hdr-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #00c853;
+  box-shadow: 0 0 6px #00c853;
+  flex-shrink: 0;
+}
+#plc-sim-hdr-title {
+  flex: 1;
+  letter-spacing: 2px;
+  font-size: 9px;
+  color: var(--fg);
+}
+#plc-sim-hdr-close {
+  background: none; border: none;
+  color: var(--mid); cursor: pointer;
+  font-size: 16px; line-height: 1;
+  padding: 0 2px;
+}
+#plc-sim-hdr-close:hover { color: var(--fg); }
+
+#plc-sim-body {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+#plc-sim-body::-webkit-scrollbar { width: 4px; }
+#plc-sim-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+#plc-sim-empty {
+  padding: 20px 16px;
+  text-align: center;
+  color: var(--mid);
+  line-height: 1.9;
+  letter-spacing: 0.5px;
+}
+
+.plc-sim-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+}
+.plc-sim-row:hover { background: rgba(255,255,255,.03); }
+
+.plc-sim-row-info { flex: 1; min-width: 0; }
+.plc-sim-row-tipo {
+  font-size: 9px; letter-spacing: 1px; color: var(--fg);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.plc-sim-row-var {
+  font-size: 8px; color: var(--mid); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Toggle switch */
+.plc-sim-toggle {
+  position: relative; display: inline-block;
+  width: 34px; height: 18px; flex-shrink: 0; cursor: pointer;
+}
+.plc-sim-toggle input { opacity: 0; width: 0; height: 0; }
+.plc-sim-toggle-track {
+  position: absolute; inset: 0;
+  background: var(--border); border-radius: 9px;
+  transition: background .2s;
+}
+.plc-sim-toggle-track::before {
+  content: "";
+  position: absolute;
+  width: 12px; height: 12px;
+  left: 3px; top: 3px;
+  background: var(--mid); border-radius: 50%;
+  transition: transform .2s, background .2s;
+}
+.plc-sim-toggle input:checked + .plc-sim-toggle-track { background: #00c853; }
+.plc-sim-toggle input:checked + .plc-sim-toggle-track::before {
+  transform: translateX(16px);
+  background: #fff;
+}
+
+#plc-sim-footer {
+  display: flex; gap: 4px;
+  padding: 8px; border-top: 1px solid var(--border);
+}
+.plc-sim-footer-btn {
+  flex: 1; padding: 5px 4px;
+  background: transparent;
+  border: 1px solid var(--border); border-radius: 2px;
+  color: var(--mid);
+  font-family: "DM Mono", monospace;
+  font-size: 8px; letter-spacing: 1px;
+  cursor: pointer; transition: all .15s;
+}
+.plc-sim-footer-btn:hover        { border-color: var(--fg); color: var(--fg); }
+.plc-sim-footer-btn.ok:hover     { border-color: #00c853; color: #00c853; }
+
+/* Botón SIM topbar */
+#btn-plc-sim.activo {
+  color: #00c853 !important;
+  border-color: #00c853 !important;
+}
+
+/* ── Botón SNAP activo ── */
+#btn-snap.activo {
+  color: #29b6f6 !important;
+  border-color: #29b6f6 !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   TABLA DE CONEXIONES PLC
+══════════════════════════════════════════════════════════════ */
+.tplc-th {
+  padding: 6px 12px;
+  font-family: "DM Mono", monospace;
+  font-size: 8px; letter-spacing: 2px;
+  color: var(--mid); font-weight: 500;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.tplc-row {
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  transition: background .1s;
+}
+.tplc-row:hover { background: rgba(255,255,255,.03); }
+.tplc-row-off { opacity: .35; }
+
+.tplc-td {
+  padding: 7px 12px;
+  vertical-align: top;
+  font-family: "DM Mono", monospace;
+}
+.tplc-td-check { vertical-align: middle; width: 30px; }
+.tplc-cb { cursor: pointer; accent-color: #00c853; width: 13px; height: 13px; }
+
+.tplc-td-id { cursor: pointer; }
+.tplc-td-id:hover .tplc-id { color: #29b6f6; }
+.tplc-id {
+  font-size: 9px; letter-spacing: 1px;
+  color: var(--fg); font-weight: 500;
+}
+.tplc-tipo {
+  font-size: 8px; color: var(--mid);
+  letter-spacing: 0.5px; margin-top: 2px;
+}
+
+.tplc-td-pos { white-space: nowrap; }
+.tplc-pos { font-size: 8px; color: var(--mid); letter-spacing: 0.5px; }
+.tplc-poll {
+  display: inline-block; margin-top: 3px;
+  font-size: 7px; padding: 1px 5px;
+  background: rgba(41,182,246,.12);
+  border: 1px solid rgba(41,182,246,.25);
+  border-radius: 2px; color: #29b6f6;
+  letter-spacing: 0.5px;
+}
+
+.tplc-td-vars { width: 100%; }
+.tplc-var-row {
+  display: flex; align-items: baseline;
+  gap: 6px; padding: 2px 0;
+}
+.tplc-var-label {
+  font-size: 7px; color: var(--mid);
+  letter-spacing: 1.5px; min-width: 52px;
+  flex-shrink: 0;
+}
+.tplc-var-val {
+  font-size: 9px; color: #c8d8b0;
+  letter-spacing: 0.5px; cursor: pointer;
+  padding: 1px 5px; border-radius: 2px;
+  transition: background .1s, color .1s;
+  word-break: break-all;
+}
+.tplc-var-val:hover {
+  background: rgba(0,200,83,.14); color: #00e676;
+}
+.tplc-var-val:hover::after { content: " 📋"; font-size: 8px; opacity: .7; }
+.tplc-var-val.tplc-copiado {
+  background: rgba(0,200,83,.25); color: #00e676;
+}
+
+.tplc-td-acc { vertical-align: middle; }
+.tplc-btn-sel {
+  background: none; border: 1px solid var(--border);
+  color: var(--mid); cursor: pointer;
+  font-size: 13px; width: 26px; height: 26px;
+  border-radius: 3px; display: flex;
+  align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.tplc-btn-sel:hover { border-color: #29b6f6; color: #29b6f6; }
+
+/* ── Tabs modo tabla PLC ── */
+.tplc-tab {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--mid);
+  font-family: "DM Mono", monospace;
+  font-size: 8px; letter-spacing: 1.5px;
+  padding: 4px 9px; cursor: pointer;
+  transition: all .15s;
+}
+.tplc-tab:hover { border-color: var(--fg); color: var(--fg); }
+.tplc-tab.activo { border-color: #00c853; color: #00c853; }
+
+/* Pills de variables en modo configurar */
+.tplc-pill {
+  display: inline-block;
+  background: rgba(0,200,83,.1);
+  border: 1px solid rgba(0,200,83,.2);
+  border-radius: 2px;
+  font-family: "DM Mono", monospace;
+  font-size: 8px; color: #c8d8b0;
+  padding: 1px 5px; margin: 1px 2px 1px 0;
+  letter-spacing: .3px;
+  word-break: break-all;
+}
+.tplc-pill-more {
+  background: rgba(100,100,100,.15);
+  border-color: rgba(100,100,100,.2);
+  color: var(--mid);
+}
+
+/* Etiquetas info en modo ver */
+.tplc-var-label-info { color: #3a3a3a !important; }
+.tplc-var-val-info   { color: var(--mid) !important; cursor: default !important; }
+.tplc-var-val-info:hover { background: none !important; color: var(--mid) !important; }
+.tplc-var-val-info:hover::after { content: '' !important; }
+
+/* ── Paginación tabla PLC (editor) ── */
+.tplc-pag-info {
+  font-family: "DM Mono", monospace;
+  font-size: 8px; color: var(--mid); letter-spacing: 1px;
+}
+.tplc-pag-btns { display: flex; gap: 3px; }
+.tplc-pag-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--mid);
+  font-family: "DM Mono", monospace;
+  font-size: 9px; padding: 2px 7px;
+  cursor: pointer; transition: all .12s;
+  min-width: 26px;
+}
+.tplc-pag-btn:hover:not([disabled]) { border-color: var(--fg); color: var(--fg); }
+.tplc-pag-btn.activo { border-color: #00c853; color: #00c853; background: rgba(0,200,83,.08); }
+.tplc-pag-btn[disabled] { opacity: .3; cursor: default; }
+
+/* =================================================================
+   SENSORES — Animaciones de estado activo/inactivo
+================================================================= */
+
+/* ── Sensor proximity (inductivo/capacitivo) ── */
+@keyframes sensor-prox-ping {
+  0%   { r: 8; opacity: .9; }
+  60%  { r: 22; opacity: 0; }
+  100% { r: 8; opacity: 0; }
+}
+@keyframes sensor-prox-glow {
+  0%,100% { filter: drop-shadow(0 0 3px #f9a825); }
+  50%     { filter: drop-shadow(0 0 10px #f9a825) drop-shadow(0 0 20px #f57c00); }
+}
+.hel.plc-activo .sensor-prox-ping  { animation: sensor-prox-ping 1s ease-out infinite; }
+.hel.plc-activo .sensor-body       { animation: sensor-prox-glow .8s ease-in-out infinite; }
+
+/* ── Sensor balancín / final de carrera ── */
+@keyframes balancin-swing {
+  0%,100% { transform-origin: 50% 90%; transform: rotate(-22deg); }
+  50%     { transform-origin: 50% 90%; transform: rotate(22deg); }
+}
+@keyframes balancin-glow {
+  0%,100% { filter: drop-shadow(0 0 2px #00e676); }
+  50%     { filter: drop-shadow(0 0 9px #00e676) drop-shadow(0 0 18px #00c853); }
+}
+.hel.plc-activo .balancin-arm      { animation: balancin-swing .6s ease-in-out infinite; }
+.hel.plc-activo .balancin-body     { animation: balancin-glow .6s ease-in-out infinite; }
+
+/* ── Sensor fotoeléctrico (haz de luz) ── */
+@keyframes foto-beam {
+  0%,100% { opacity: .2; stroke-width: 1.5; }
+  50%     { opacity: 1;   stroke-width: 3; }
+}
+@keyframes foto-rx-blink {
+  0%,100% { fill: #263238; }
+  50%     { fill: #00e5ff; filter: drop-shadow(0 0 6px #00e5ff); }
+}
+.hel.plc-activo .foto-beam         { animation: foto-beam .5s ease-in-out infinite; }
+.hel.plc-activo .foto-rx           { animation: foto-rx-blink .5s ease-in-out infinite; }
+
+/* ── Encoder rotativo ── */
+@keyframes encoder-spin {
+  from { transform: rotate(0deg);   transform-origin: 50% 50%; }
+  to   { transform: rotate(360deg); transform-origin: 50% 50%; }
+}
+@keyframes encoder-glow {
+  0%,100% { filter: drop-shadow(0 0 2px #29b6f6); }
+  50%     { filter: drop-shadow(0 0 9px #29b6f6); }
+}
+.hel.plc-activo .encoder-disk      { animation: encoder-spin .8s linear infinite; }
+.hel.plc-activo .encoder-body      { animation: encoder-glow .8s ease-in-out infinite; }
+
+/* ── Caudalímetro (flow meter) ── */
+@keyframes flow-rotate {
+  from { transform: rotate(0deg);   transform-origin: 50% 50%; }
+  to   { transform: rotate(360deg); transform-origin: 50% 50%; }
+}
+@keyframes flow-glow {
+  0%,100% { filter: drop-shadow(0 0 2px #00acc1); }
+  50%     { filter: drop-shadow(0 0 10px #00e5ff); }
+}
+.hel.plc-activo .flow-rotor        { animation: flow-rotate .4s linear infinite; }
+.hel.plc-activo .flow-body         { animation: flow-glow .8s ease-in-out infinite; }
+
+/* ── Presostato ── */
+@keyframes pressure-pulse {
+  0%,100% { transform: scaleY(1);   transform-origin: 50% 100%; }
+  50%     { transform: scaleY(1.12); transform-origin: 50% 100%; }
+}
+@keyframes pressure-glow {
+  0%,100% { filter: drop-shadow(0 0 2px #ef5350); }
+  50%     { filter: drop-shadow(0 0 10px #ef5350) drop-shadow(0 0 20px #c62828); }
+}
+.hel.plc-activo .pres-needle       { animation: pressure-pulse .7s ease-in-out infinite; }
+.hel.plc-activo .pres-body         { animation: pressure-glow .7s ease-in-out infinite; }
+
+/* ── Termopar / PT100 ── */
+@keyframes temp-pulse {
+  0%,100% { fill: #f9a825; }
+  50%     { fill: #ff6f00; filter: drop-shadow(0 0 8px #ff6f00); }
+}
+.hel.plc-activo .temp-tip          { animation: temp-pulse 1s ease-in-out infinite; }
+
+/* ── Ultrasonidos (distancia) ── */
+@keyframes ultra-wave {
+  0%   { opacity: .8; transform: scaleX(1);   }
+  100% { opacity: 0;  transform: scaleX(2.5); }
+}
+.hel.plc-activo .ultra-w1 { animation: ultra-wave .8s ease-out infinite; }
+.hel.plc-activo .ultra-w2 { animation: ultra-wave .8s ease-out .2s infinite; }
+.hel.plc-activo .ultra-w3 { animation: ultra-wave .8s ease-out .4s infinite; }
+
+/* ── RFID/NFC ── */
+@keyframes rfid-ring {
+  0%   { r: 12; opacity: .7; stroke-width: 2.5; }
+  100% { r: 28; opacity: 0;  stroke-width: 1; }
+}
+.hel.plc-activo .rfid-ring1 { animation: rfid-ring 1.2s ease-out infinite; }
+.hel.plc-activo .rfid-ring2 { animation: rfid-ring 1.2s ease-out .4s infinite; }
+.hel.plc-activo .rfid-ring3 { animation: rfid-ring 1.2s ease-out .8s infinite; }
+
+/* ── Variador de frecuencia ── */
+@keyframes vfd-bars {
+  0%,100% { opacity: .4; }
+  50%     { opacity: 1; }
+}
+.hel.plc-activo .vfd-bar1 { animation: vfd-bars .4s ease-in-out 0s   infinite; }
+.hel.plc-activo .vfd-bar2 { animation: vfd-bars .4s ease-in-out .07s infinite; }
+.hel.plc-activo .vfd-bar3 { animation: vfd-bars .4s ease-in-out .14s infinite; }
+.hel.plc-activo .vfd-bar4 { animation: vfd-bars .4s ease-in-out .21s infinite; }
+.hel.plc-activo .vfd-bar5 { animation: vfd-bars .4s ease-in-out .28s infinite; }
+
+/* =================================================================
+   INFO-CARD — Botón de tarjeta de información PLC
+================================================================= */
+.hinfo-card {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  background: #1a1a16;
+  border: 1.5px solid #2e2e28;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+  position: relative;
+}
+.hinfo-card:hover { border-color: #1565c0; box-shadow: 0 0 0 2px rgba(21,101,192,.2); }
+.hinfo-card-hdr {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 8px;
+  background: #111110;
+  border-bottom: 1px solid #2e2e28;
+  flex-shrink: 0;
+}
+.hinfo-card-ico  { font-size: 13px; flex-shrink: 0; }
+.hinfo-card-title {
+  font-family: "DM Mono", monospace;
+  font-size: 9px; letter-spacing: 1.5px;
+  color: #f0f0e8; font-weight: 600;
+  text-transform: uppercase;
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hinfo-card-badge {
+  font-family: "DM Mono", monospace;
+  font-size: 7px; letter-spacing: 1px;
+  background: #1565c0; color: #fff;
+  padding: 1px 5px; border-radius: 2px;
+}
+.hinfo-card-body {
+  flex: 1; padding: 5px 8px;
+  display: flex; flex-direction: column; gap: 3px;
+  overflow: hidden;
+}
+.hinfo-card-row {
+  display: flex; align-items: baseline; gap: 5px;
+}
+.hinfo-card-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #1565c0; flex-shrink: 0; margin-top: 2px;
+}
+.hinfo-card-key {
+  font-family: "DM Mono", monospace;
+  font-size: 7px; letter-spacing: .5px; color: #5a5a52;
+  flex-shrink: 0; width: 52px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hinfo-card-val {
+  font-family: "DM Mono", monospace;
+  font-size: 8px; color: #b0b0a8;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex: 1;
+}
+.hinfo-card-more {
+  font-family: "DM Mono", monospace;
+  font-size: 7px; color: #3a3a32; letter-spacing: 1px;
+  margin-top: 2px; text-align: center;
+}
+.hinfo-card-click-hint {
+  position: absolute; bottom: 4px; right: 6px;
+  font-family: "DM Mono", monospace;
+  font-size: 7px; color: #2e2e28; letter-spacing: .5px;
+  pointer-events: none;
+}
+
+/* ── Popup info-card ── */
+#infocard-popup {
+  position: fixed;
+  z-index: 99000;
+  min-width: 280px; max-width: 400px;
+  background: #111110;
+  border: 1.5px solid #2e2e28;
+  border-radius: 6px;
+  box-shadow: 0 12px 48px rgba(0,0,0,.8);
+  font-family: "DM Sans", sans-serif;
+  overflow: hidden;
+  opacity: 0; transform: scale(.95) translateY(-6px);
+  transition: opacity .15s, transform .15s;
+  pointer-events: none;
+}
+#infocard-popup.visible {
+  opacity: 1; transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+.icp-hdr {
+  display: flex; align-items: center; gap: 9px;
+  padding: 12px 16px 10px;
+  background: #1a1a16;
+  border-bottom: 1px solid #2e2e28;
+}
+.icp-hdr-ico  { font-size: 20px; }
+.icp-hdr-info { flex: 1; }
+.icp-hdr-title {
+  font-family: "DM Mono", monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; color: #f0f0e8;
+  text-transform: uppercase;
+}
+.icp-hdr-sub {
+  font-size: 10px; color: #5a5a52; margin-top: 1px;
+}
+.icp-close {
+  background: none; border: none;
+  color: #5a5a52; font-size: 16px;
+  cursor: pointer; padding: 4px 6px;
+  border-radius: 3px; line-height: 1;
+  transition: background .1s, color .1s;
+}
+.icp-close:hover { background: #2e2e28; color: #f0f0e8; }
+.icp-body { padding: 10px 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+.icp-section-title {
+  font-family: "DM Mono", monospace;
+  font-size: 7px; letter-spacing: 2px;
+  color: #3a3a32; text-transform: uppercase;
+  padding: 6px 0 3px; margin-top: 4px;
+  border-top: 1px solid #1e1e1c;
+}
+.icp-section-title:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+.icp-row {
+  display: flex; align-items: baseline;
+  gap: 8px; padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+}
+.icp-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #1565c0; flex-shrink: 0; margin-top: 3px;
+}
+.icp-dot.green  { background: #00c853; }
+.icp-dot.orange { background: #f9a825; }
+.icp-dot.red    { background: #ef5350; }
+.icp-dot.purple { background: #9c27b0; }
+.icp-key {
+  font-family: "DM Mono", monospace;
+  font-size: 8px; letter-spacing: .5px;
+  color: #5a5a52; flex-shrink: 0;
+  min-width: 80px;
+}
+.icp-val {
+  font-family: "DM Mono", monospace;
+  font-size: 9px; color: #c8c8c0;
+  cursor: pointer; flex: 1;
+  padding: 1px 5px; border-radius: 2px;
+  transition: background .1s, color .1s;
+  word-break: break-all;
+}
+.icp-val:hover { background: #1e2a38; color: #4fc3f7; }
+.icp-val.copied { background: #1b3a1b; color: #00c853; }
+.icp-notes {
+  font-size: 10px; color: #5a5a52;
+  line-height: 1.5; padding: 8px;
+  background: #0f0f0d; border-radius: 3px;
+  margin-top: 4px; white-space: pre-wrap;
+}
+.icp-footer {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid #1e1e1c;
+  font-family: "DM Mono", monospace;
+  font-size: 8px; color: #3a3a32; letter-spacing: .5px;
+}
+.icp-footer-id { flex: 1; }

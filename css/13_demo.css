@@ -1,0 +1,76 @@
+/* ══════════════════════════════════════════════
+   AVISO DE BIENVENIDA DE LA DEMO (js/30_demo.js)
+══════════════════════════════════════════════ */
+#demo-overlay {
+  position: fixed; inset: 0; z-index: 100000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  background: rgba(5,7,10,.78);
+  backdrop-filter: blur(6px);
+  transition: opacity .2s;
+}
+#demo-overlay.saliendo { opacity: 0; }
+
+#demo-box {
+  width: 520px; max-width: 100%; max-height: calc(100vh - 32px); overflow-y: auto;
+  background: var(--panel); border: 1px solid rgba(230,232,236,.16); border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6);
+  animation: demoEntra .25s cubic-bezier(.2,.9,.3,1.2) both;
+}
+@keyframes demoEntra { from { opacity: 0; transform: translateY(14px) scale(.97); } }
+
+#demo-head {
+  position: relative;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(212,165,116,.1), transparent 60%);
+}
+#demo-badge {
+  display: inline-block;
+  font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 2px;
+  color: var(--accent); border: 1px solid rgba(212,165,116,.4); border-radius: 20px;
+  padding: 2px 10px; margin-bottom: 10px;
+}
+#demo-titulo { font-size: 26px; font-weight: 600; color: var(--text); line-height: 1.1; }
+#demo-titulo em { font-style: normal; color: var(--accent); }
+#demo-sub { margin-top: 4px; font-size: 13px; color: var(--light); }
+
+#demo-idiomas { position: absolute; top: 18px; right: 20px; display: flex; gap: 2px; }
+#demo-idiomas button {
+  font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: 1px;
+  background: none; border: 1px solid transparent; border-radius: 4px;
+  color: var(--mid); padding: 3px 7px; cursor: pointer;
+}
+#demo-idiomas button:hover { color: var(--text); }
+#demo-idiomas button.sel { color: var(--accent); border-color: rgba(212,165,116,.4); }
+
+#demo-body { padding: 18px 24px 8px; font-size: 13px; line-height: 1.55; color: var(--light); }
+#demo-body b { color: var(--text); font-weight: 600; }
+#demo-aviso {
+  padding: 10px 13px; margin-bottom: 16px;
+  border: 1px solid rgba(212,165,116,.3); border-radius: 8px;
+  background: rgba(212,165,116,.08);
+}
+#demo-sec {
+  font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--mid); margin-bottom: 8px;
+}
+.demo-item { display: flex; gap: 10px; margin-bottom: 8px; }
+.demo-ico { width: 20px; flex-shrink: 0; text-align: center; }
+#demo-nota { margin-top: 12px; font-size: 12px; color: var(--mid); }
+#demo-movil { display: none; margin-top: 10px; font-size: 12px; color: var(--warn); }
+@media (max-width: 900px) { #demo-movil { display: block; } }
+
+#demo-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 24px 20px;
+}
+#demo-volver { font-size: 13px; color: var(--light); text-decoration: none; }
+#demo-volver:hover { color: var(--text); }
+#demo-entrar {
+  font-family: "DM Sans", sans-serif; font-size: 14px; font-weight: 600;
+  background: var(--accent); color: var(--on-accent);
+  border: none; border-radius: 999px; padding: 10px 22px; cursor: pointer;
+}
+#demo-entrar:hover { filter: brightness(1.08); }
+#demo-entrar:focus-visible, #demo-idiomas button:focus-visible, #demo-volver:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

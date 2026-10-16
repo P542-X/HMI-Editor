@@ -1,0 +1,38 @@
+/* ══════════════════════════════════════════════
+   DATOS NUEVOS
+══════════════════════════════════════════════ */
+
+/* XY CHART */
+.hxychart { width:100%; height:100%; background:#fff; border:1px solid #d8d8d0; border-radius:3px; display:flex; flex-direction:column; overflow:hidden; }
+.hxychart-top { padding:4px 10px; border-bottom:1px solid #e8e8e0; background:#f9f9f7; display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.hxychart-lbl { font-family:"DM Mono",monospace; font-size:9px; letter-spacing:1px; color:#6a6a62; flex:1; }
+.hxychart-body { flex:1; padding:4px; }
+.hxychart-svg  { width:100%; height:100%; }
+
+/* BAR CHART */
+.hbarchart { width:100%; height:100%; background:#fff; border:1px solid #d8d8d0; border-radius:3px; display:flex; flex-direction:column; overflow:hidden; }
+.hbarchart-top { padding:4px 10px; border-bottom:1px solid #e8e8e0; background:#f9f9f7; display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.hbarchart-lbl { font-family:"DM Mono",monospace; font-size:9px; letter-spacing:1px; color:#6a6a62; flex:1; }
+.hbarchart-body { flex:1; display:flex; align-items:flex-end; gap:3px; padding:6px 8px 4px; }
+.hbarchart-col  { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
+.hbarchart-bar  { width:100%; border-radius:2px 2px 0 0; min-height:2px; }
+.hbarchart-name { font-family:"DM Mono",monospace; font-size:7px; color:#9a9a90; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%; }
+
+/* DATETIME */
+.hdatetime { width:100%; height:100%; background:#0f0f0d; border:1px solid #2a2a26; border-radius:3px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6px; }
+.hdatetime-time { font-family:"DM Mono",monospace; font-weight:700; color:#f0f0e8; letter-spacing:3px; }
+.hdatetime-date { font-family:"DM Mono",monospace; font-size:9px; color:rgba(240,240,232,.4); letter-spacing:2px; margin-top:3px; }
+.hdatetime-tz   { font-family:"DM Mono",monospace; font-size:7px; color:rgba(240,240,232,.25); letter-spacing:1px; margin-top:2px; }
+
+/* RECIPE TABLE */
+.hrecipe { width:100%; height:100%; background:#fff; border:1px solid #d8d8d0; border-radius:3px; display:flex; flex-direction:column; overflow:hidden; }
+.hrecipe-hdr { padding:5px 10px; background:#1a1a18; display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.hrecipe-title { font-family:"DM Mono",monospace; font-size:9px; letter-spacing:3px; color:rgba(255,255,255,.7); flex:1; }
+.hrecipe-num   { font-family:"DM Mono",monospace; font-size:9px; color:rgba(255,255,255,.4); }
+.hrecipe-body  { flex:1; overflow:hidden; }
+.hrecipe-row   { display:flex; align-items:center; border-bottom:1px solid #f0f0ec; padding:4px 10px; }
+.hrecipe-row:last-child { border-bottom:none; }
+.hrecipe-row-lbl { font-family:"DM Mono",monospace; font-size:9px; color:#6a6a62; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hrecipe-row-val { font-family:"DM Mono",monospace; font-size:10px; font-weight:600; color:#1a1a16; min-width:40px; text-align:right; }
+.hrecipe-row-unit { font-family:"DM Mono",monospace; font-size:8px; color:#9a9a90; min-width:20px; text-align:right; padding-left:3px; }
+

@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HMI Editor · Paulo Carrasco</title>
+<meta name="description" content="Editor visual de pantallas HMI industriales: más de 200 componentes, simulador de variables y exportación a HTML para PLC Siemens S7-1200/1500.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<!-- ═══════════════════════════════════════════
+     CSS — separado por módulos funcionales
+═══════════════════════════════════════════ -->
+<link rel="stylesheet" href="css/01_variables-layout.css">
+<link rel="stylesheet" href="css/02_biblioteca-panel.css">
+<link rel="stylesheet" href="css/03_elementos-alarmas.css">
+<link rel="stylesheet" href="css/04_elementos-datos.css">
+<link rel="stylesheet" href="css/05_elementos-navegacion.css">
+<link rel="stylesheet" href="css/06_elementos-controles.css">
+<link rel="stylesheet" href="css/07_elementos-indicadores.css">
+<link rel="stylesheet" href="css/08_elementos-alarmas-nuevas.css">
+<link rel="stylesheet" href="css/09_elementos-datos-nuevos.css">
+<link rel="stylesheet" href="css/10_decoracion.css">
+<link rel="stylesheet" href="css/11_sistema.css">
+<link rel="stylesheet" href="css/12_animaciones-plc.css">
+<link rel="stylesheet" href="css/13_demo.css">
+</head>
+<body>
+
+<div id="topbar">
+  <a class="logo-wrap" href="https://paulocarrasco.dev/" title="Volver al portfolio">
+    <div class="logo-name">PC<span>.</span>dev</div>
+    <div class="logo-divider"></div>
+    <div class="logo-sub">HMI Editor</div>
+  </a>
+
+  <div class="tb-scroll">
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="abrirModalPlc()">⚙ PLC</button>
+  <button class="tb-btn" id="btn-plc-sim" onclick="toggleSimulador()" title="Simulador de estados PLC">⚡ SIM</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="nuevoCanvas()">☐ NUEVO</button>
+  <button class="tb-btn" onclick="guardarProyecto()">↓ GUARDAR</button>
+  <button class="tb-btn" onclick="cargarProyecto()">↑ CARGAR</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="hacerDeshacer()" title="Ctrl+Z">↩</button>
+  <button class="tb-btn" onclick="hacerRehacer()" title="Ctrl+Y">↪</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn activo" id="btn-snap" onclick="toggleSnap()" title="Ajuste a cuadrícula ON/OFF (S)">⊞ SNAP</button>
+  <select class="res-select" id="snap-grid-sel" onchange="cambiarGrid(this.value)" title="Tamaño del grid" style="width:84px;font-size:9px">
+    <option value="8" selected>Grid 8px</option>
+    <option value="4">Grid 4px</option>
+    <option value="1">Libre</option>
+  </select>
+  <button class="tb-btn" onclick="abrirTablaPLC()" title="Tabla de conexiones PLC">🔌 TABLA PLC</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="seleccionarTodo()">⊞ TODO</button>
+  <button class="tb-btn warn" onclick="eliminarSeleccion()">✕ ELIMINAR</button>
+  <div class="tb-sep"></div>
+  <select class="res-select" id="res-selector" onchange="cambiarResolucion(this.value)" title="Resolución de pantalla">
+    <option value="800x480">7″  MTP700 — 800×480</option>
+    <option value="1280x800">10.1″ MTP1000 — 1280×800</option>
+    <option value="1280x800b">12.1″ MTP1200 — 1280×800</option>
+    <option value="1366x768">15.6″ MTP1500 — 1366×768</option>
+    <option value="1920x1080">18.5″ MTP1900 — 1920×1080</option>
+    <option value="1920x1080b">21.5″ MTP2200 — 1920×1080</option>
+  </select>
+  </div>
+
+  <button class="tb-btn primary" onclick="abrirExportar()">↗ EXPORTAR HTML</button>
+
+  <div id="plc-pill" onclick="abrirModalPlc()">
+    <div class="pdot" id="pdot"></div>
+    <span id="ptxt">SIN CONFIGURAR</span>
+  </div>
+</div>
+
+<div id="main">
+
+  <div id="lpanel">
+
+    <!-- Cabecera biblioteca -->
+    <div id="lib-header">
+      <div class="lib-header-title">Biblioteca</div>
+      <input class="lib-search" type="text" placeholder="Buscar componente..." id="lib-search-inp" oninput="filtrarBiblioteca(this.value)">
+    </div>
+
+    <div id="lpanel-scroll">
+
+      <!-- 1. BOTONES -->
+      <div class="lib-cat open" id="cat-botones">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-botones')">
+          <div class="lib-cat-bar" style="background:var(--accent)"></div>
+          <div class="lib-cat-icon">⎋</div>
+          <div class="lib-cat-name">Botones</div>
+          <div class="lib-cat-count">14</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="btn-simple"><div class="cc-ico">▶</div><div><div class="cc-name">Botón Simple</div><div class="cc-sub">Pulso / escritura</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="btn-led"><div class="cc-ico">◉</div><div><div class="cc-name">Botón + LED</div><div class="cc-sub">Con indicador estado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="btn-toggle"><div class="cc-ico">⇌</div><div><div class="cc-name">Toggle ON/OFF</div><div class="cc-sub">Estado permanente</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="btn-emergency"><div class="cc-ico" style="color:#c62828">⚠</div><div><div class="cc-name">Emergency Stop</div><div class="cc-sub">Toggle NC / NA</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="btn-selector"><div class="cc-ico">⊞</div><div><div class="cc-name">Selector</div><div class="cc-sub">Hasta 3 opciones</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="btn-dpad"><div class="cc-ico">✛</div><div><div class="cc-name">D-Pad</div><div class="cc-sub">4 direcciones</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="btn-jog"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0">JOG</div><div><div class="cc-name">Botón JOG</div><div class="cc-sub">Activo mientras pulsado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="btn-confirm"><div class="cc-ico" style="background:rgba(230,81,0,.12);color:#e65100">✔✔</div><div><div class="cc-name">Confirmación</div><div class="cc-sub">Doble click requerido</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="btn-set-reset"><div class="cc-ico" style="background:rgba(27,94,32,.12);color:#2e7d32">S/R</div><div><div class="cc-name">SET / RESET</div><div class="cc-sub">Par de escritura</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="btn-multistate"><div class="cc-ico" style="background:rgba(26,26,24,.06)">1→2</div><div><div class="cc-name">Multi-Estado</div><div class="cc-sub">Estados cíclicos</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="spinbox"><div class="cc-ico" style="background:rgba(26,26,24,.06)">±N</div><div><div class="cc-name">SpinBox</div><div class="cc-sub">Entrada numérica ±</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="slider-h"><div class="cc-ico" style="background:rgba(26,26,24,.06)">━●</div><div><div class="cc-name">Slider H</div><div class="cc-sub">Setpoint analógico</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="slider-v"><div class="cc-ico" style="background:rgba(26,26,24,.06)">┃</div><div><div class="cc-name">Slider V</div><div class="cc-sub">Setpoint vertical</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="popup-btn"><div class="cc-ico" style="background:#1565c0;color:#fff;font-size:11px">⬡↗</div><div><div class="cc-name">Botón Popup</div><div class="cc-sub">Abre un panel flotante</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 2. VISUALIZACIÓN -->
+      <div class="lib-cat" id="cat-visual">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-visual')">
+          <div class="lib-cat-bar" style="background:#1565c0"></div>
+          <div class="lib-cat-icon" style="color:#1565c0">⊡</div>
+          <div class="lib-cat-name">Visualización</div>
+          <div class="lib-cat-count">27</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="display"><div class="cc-ico" style="background:#0f0f0d;color:#f0f0e8;font-size:9px">VAR</div><div><div class="cc-name">Display</div><div class="cc-sub">Valor de variable</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="status-led"><div class="cc-ico">●</div><div><div class="cc-name">LED Estado</div><div class="cc-sub">Indicador booleano</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="signal-lamp">
+            <div class="cc-ico" style="background:#1a1a14;display:flex;flex-direction:column;gap:2px;padding:4px;align-items:center">
+              <div style="width:10px;height:10px;border-radius:50%;background:#ef5350"></div>
+              <div style="width:10px;height:10px;border-radius:50%;background:#ffca28"></div>
+              <div style="width:10px;height:10px;border-radius:50%;background:#66bb6a"></div>
+            </div>
+            <div><div class="cc-name">Piloto Señal.</div><div class="cc-sub">3–4 colores PLC</div></div>
+          </div>
+          <div class="comp-card" draggable="true" data-tipo="multibit-led"><div class="cc-ico" style="background:rgba(26,26,24,.06)">⠿</div><div><div class="cc-name">Word Bits</div><div class="cc-sub">LEDs por bit</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="gauge"><div class="cc-ico" style="background:rgba(245,124,0,.12);color:#f57c00">◑</div><div><div class="cc-name">Gauge</div><div class="cc-sub">Aguja circular</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="bargraph-v"><div class="cc-ico" style="background:rgba(245,124,0,.12);color:#f57c00">▐</div><div><div class="cc-name">Barra Vertical</div><div class="cc-sub">Nivel analógico</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="numeric-7seg"><div class="cc-ico" style="background:#0a0a08;color:#00e676;font-size:10px">8.8</div><div><div class="cc-name">Display 7-Seg</div><div class="cc-sub">Cifras grandes</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="setpoint-input"><div class="cc-ico" style="background:rgba(46,125,50,.12);color:#2e7d32">SP</div><div><div class="cc-name">Setpoint SP/PV</div><div class="cc-sub">Lee PV, escribe SP</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="xy-chart"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0">XY</div><div><div class="cc-name">Gráfica XY</div><div class="cc-sub">Dos variables</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="img-plc"><div class="cc-ico">🖼</div><div><div class="cc-name">Imagen PLC</div><div class="cc-sub">Muestra según bit</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="label"><div class="cc-ico" style="font-size:9px;font-weight:700">LBL</div><div><div class="cc-name">Etiqueta</div><div class="cc-sub">Texto fijo</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="bar-chart"><div class="cc-ico" style="background:rgba(55,71,79,.12);color:#37474f">▋▌▍</div><div><div class="cc-name">Gráfica Barras</div><div class="cc-sub">Comparativa vars</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="recipe-table"><div class="cc-ico" style="background:rgba(55,71,79,.12);color:#37474f">☰</div><div><div class="cc-name">Tabla Receta</div><div class="cc-sub">Parámetros editables</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="datetime-display"><div class="cc-ico" style="background:#0f0f0d;color:#f0f0e8;font-size:9px">00:00</div><div><div class="cc-name">Fecha / Hora</div><div class="cc-sub">Del sistema o PLC</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="thermometer-display"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828">🌡</div><div><div class="cc-name">Termómetro</div><div class="cc-sub">Visual columna</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="pressure-gauge-pid"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0">◑</div><div><div class="cc-name">Manómetro P&ID</div><div class="cc-sub">Aguja + alarma</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="flow-totalizer"><div class="cc-ico" style="background:rgba(0,131,143,.12);color:#00838f">≋</div><div><div class="cc-name">Caudalímetro</div><div class="cc-sub">Caudal + total</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="level-indicator"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0">▐</div><div><div class="cc-name">Indicador Nivel</div><div class="cc-sub">Visual columna</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="energy-meter"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px;font-weight:700">kWh</div><div><div class="cc-name">Medidor Energía</div><div class="cc-sub">kW + kWh + PF</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="ph-meter"><div class="cc-ico" style="background:rgba(0,131,143,.12);color:#00838f;font-size:9px;font-weight:700">pH</div><div><div class="cc-name">Medidor pH</div><div class="cc-sub">Con escala color</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="rpm-display"><div class="cc-ico" style="background:rgba(41,182,246,.12);color:#29b6f6;font-size:9px;font-weight:700">RPM</div><div><div class="cc-name">Display RPM</div><div class="cc-sub">Con referencia</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="temperature-4zone"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828;font-size:9px;font-weight:700">T4Z</div><div><div class="cc-name">Temp 4 Zonas</div><div class="cc-sub">Perfil temperatura</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="trend-comparison"><div class="cc-ico" style="background:rgba(26,26,24,.06)">↗↗</div><div><div class="cc-name">Trend Doble</div><div class="cc-sub">PV vs SP</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="analog-output"><div class="cc-ico" style="background:rgba(41,182,246,.12);color:#29b6f6;font-size:9px;font-weight:700">4-20</div><div><div class="cc-name">Salida Analógica</div><div class="cc-sub">4-20mA / 0-10V</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="string-display"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">TXT</div><div><div class="cc-name">String PLC</div><div class="cc-sub">Mensaje texto</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="plc-clock-sync"><div class="cc-ico" style="background:#0f0f0d;color:#1565c0;font-size:12px">⏱</div><div><div class="cc-name">Reloj PLC</div><div class="cc-sub">Sincronizado PLC</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 3. DATOS -->
+      <div class="lib-cat" id="cat-datos">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-datos')">
+          <div class="lib-cat-bar" style="background:#2e7d32"></div>
+          <div class="lib-cat-icon" style="color:#2e7d32">⊟</div>
+          <div class="lib-cat-name">Datos</div>
+          <div class="lib-cat-count">3</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="progress-bar"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0">▬</div><div><div class="cc-name">Barra Progreso</div><div class="cc-sub">Variable analógica</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="trend-chart"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828">↗</div><div><div class="cc-name">Tendencia</div><div class="cc-sub">Histórico en tiempo</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="data-table"><div class="cc-ico" style="background:rgba(26,26,24,.06)">⊞</div><div><div class="cc-name">Tabla Variables</div><div class="cc-sub">Múltiples variables</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 4. ALARMAS -->
+      <div class="lib-cat" id="cat-alarmas">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-alarmas')">
+          <div class="lib-cat-bar" style="background:#c62828"></div>
+          <div class="lib-cat-icon" style="color:#c62828">⚑</div>
+          <div class="lib-cat-name">Alarmas</div>
+          <div class="lib-cat-count">6</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="alarm-banner"><div class="cc-ico" style="background:#c62828;color:#fff">⚠</div><div><div class="cc-name">Banner Alarma</div><div class="cc-sub">Aviso visible</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="alarm-list"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828">☰⚑</div><div><div class="cc-name">Lista Alarmas</div><div class="cc-sub">Tabla de activas</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="alarm-ack"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828">✓</div><div><div class="cc-name">Reconocer</div><div class="cc-sub">Botón ACK</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="alarm-array"><div class="cc-ico" style="background:#c62828;color:#fff;font-size:9px">64</div><div><div class="cc-name">Array Alarmas</div><div class="cc-sub">Hasta 64 bits</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="alarm-plc"><div class="cc-ico" style="background:#1a237e;color:#fff;font-size:9px;font-weight:700">PLC</div><div><div class="cc-name">Alarmas PLC</div><div class="cc-sub">Textos del PLC directo</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="alarm-word"><div class="cc-ico" style="background:#7b1fa2;color:#fff;font-size:9px;font-weight:700">W16</div><div><div class="cc-name">Word Alarmas</div><div class="cc-sub">Bits de WORD/INT</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="alarm-ticker"><div class="cc-ico" style="background:#0a0a08;color:#ff5252;font-size:9px">▶⚑</div><div><div class="cc-name">Ticker Alarmas</div><div class="cc-sub">Scroll de mensajes</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="alarm-count"><div class="cc-ico" style="background:#c62828;color:#fff;font-size:11px;font-weight:700">3</div><div><div class="cc-name">Contador Alarmas</div><div class="cc-sub">Número de activas</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 5. P&ID / PROCESO -->
+      <div class="lib-cat" id="cat-pid">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-pid')">
+          <div class="lib-cat-bar" style="background:#00838f"></div>
+          <div class="lib-cat-icon" style="color:#00838f">⌀</div>
+          <div class="lib-cat-name">P&amp;ID / Proceso</div>
+          <div class="lib-cat-count">27</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="motor-symbol"><div class="cc-ico" style="background:rgba(0,131,143,.12);color:#00838f;font-weight:700">M</div><div><div class="cc-name">Motor P&amp;ID</div><div class="cc-sub">Símbolo normalizado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="pump-symbol"><div class="cc-ico" style="background:rgba(0,131,143,.12);color:#00838f">▷○</div><div><div class="cc-name">Bomba P&amp;ID</div><div class="cc-sub">Símbolo normalizado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="valve-symbol"><div class="cc-ico" style="background:rgba(0,131,143,.12);color:#00838f">⊳⊲</div><div><div class="cc-name">Válvula P&amp;ID</div><div class="cc-sub">Símbolo normalizado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="level-tank"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0">▭</div><div><div class="cc-name">Tanque Nivel</div><div class="cc-sub">Con indicador</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="pid-faceplate"><div class="cc-ico" style="background:rgba(0,131,143,.12);color:#00838f;font-size:9px">PID</div><div><div class="cc-name">PID Faceplate</div><div class="cc-sub">PV / SP / OUT</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="pipe-h"><div class="cc-ico" style="background:rgba(0,131,143,.1);color:#00838f;font-size:18px">━</div><div><div class="cc-name">Tubería H</div><div class="cc-sub">Horizontal</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="pipe-v"><div class="cc-ico" style="background:rgba(0,131,143,.1);color:#00838f;font-size:18px">┃</div><div><div class="cc-name">Tubería V</div><div class="cc-sub">Vertical</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="pipe-elbow"><div class="cc-ico" style="background:rgba(0,131,143,.1);color:#00838f;font-size:18px">┗</div><div><div class="cc-name">Codo 90°</div><div class="cc-sub">Curva de tubería</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="pipe-tee"><div class="cc-ico" style="background:rgba(0,131,143,.1);color:#00838f;font-size:18px">┻</div><div><div class="cc-name">Derivación T</div><div class="cc-sub">Bifurcación</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="pipe-cross"><div class="cc-ico" style="background:rgba(0,131,143,.1);color:#00838f;font-size:18px">╋</div><div><div class="cc-name">Cruce</div><div class="cc-sub">4 vías</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-motor-el"><div class="cc-ico" style="background:rgba(55,71,79,.12);color:#546e7a;font-size:11px;font-weight:700">MOT</div><div><div class="cc-name">Motor Eléctrico</div><div class="cc-sub">Decorativo 3D</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-pump-cent"><div class="cc-ico" style="background:rgba(55,71,79,.12);color:#546e7a;font-size:11px;font-weight:700">BOM</div><div><div class="cc-name">Bomba Centrif.</div><div class="cc-sub">Decorativo 3D</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="valve-motorized"><div class="cc-ico" style="background:rgba(0,131,143,.1);color:#00838f;font-size:9px;font-weight:700">VM</div><div><div class="cc-name">Válvula Mot.</div><div class="cc-sub">Con % apertura</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="valve-butterfly"><div class="cc-ico" style="background:rgba(0,131,143,.1);color:#00838f;font-size:9px;font-weight:700">VB</div><div><div class="cc-name">Válvula Mariposa</div><div class="cc-sub">Con giro</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="valve-safety"><div class="cc-ico" style="background:rgba(198,40,40,.1);color:#c62828;font-size:9px;font-weight:700">PSV</div><div><div class="cc-name">Válvula Seg.</div><div class="cc-sub">PSV / PRV</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fan-symbol"><div class="cc-ico" style="background:rgba(0,131,143,.1);color:#00838f">⌀</div><div><div class="cc-name">Ventilador</div><div class="cc-sub">Aspas girando</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="agitator-symbol"><div class="cc-ico" style="background:rgba(0,131,143,.1);color:#00838f">⁂</div><div><div class="cc-name">Agitador</div><div class="cc-sub">Palas girando</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="conveyor-pid"><div class="cc-ico" style="background:rgba(55,71,79,.12);color:#546e7a">═══</div><div><div class="cc-name">Cinta PID</div><div class="cc-sub">Con velocidad</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="dosing-pump"><div class="cc-ico" style="background:rgba(21,101,192,.1);color:#1565c0;font-size:9px;font-weight:700">DP</div><div><div class="cc-name">Bomba Dosif.</div><div class="cc-sub">Caudal PLC</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="heat-exchanger"><div class="cc-ico" style="background:rgba(198,40,40,.1);color:#c62828;font-size:9px;font-weight:700">HE</div><div><div class="cc-name">Intercambiador</div><div class="cc-sub">Calor / frío</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="filter-symbol"><div class="cc-ico" style="background:rgba(84,110,122,.1);color:#546e7a;font-size:9px;font-weight:700">FLT</div><div><div class="cc-name">Filtro</div><div class="cc-sub">Con ΔP</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="compressor-symbol"><div class="cc-ico" style="background:rgba(55,71,79,.12);color:#546e7a;font-size:9px;font-weight:700">CMP</div><div><div class="cc-name">Compresor</div><div class="cc-sub">Con RPM</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="silo"><div class="cc-ico" style="background:rgba(120,144,156,.12);color:#78909c;font-size:9px;font-weight:700">SLO</div><div><div class="cc-name">Silo</div><div class="cc-sub">Nivel cónico</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="tank-horizontal"><div class="cc-ico" style="background:rgba(21,101,192,.1);color:#1565c0;font-size:9px;font-weight:700">TH</div><div><div class="cc-name">Tanque H.</div><div class="cc-sub">Horizontal</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="tank-conical"><div class="cc-ico" style="background:rgba(21,101,192,.1);color:#1565c0;font-size:9px;font-weight:700">TC</div><div><div class="cc-name">Tanque Cónico</div><div class="cc-sub">Con peso</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="reactor-vessel"><div class="cc-ico" style="background:rgba(55,71,79,.12);color:#546e7a;font-size:9px;font-weight:700">RCT</div><div><div class="cc-name">Reactor</div><div class="cc-sub">Temp + nivel</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="separator-vessel"><div class="cc-ico" style="background:rgba(84,110,122,.1);color:#546e7a;font-size:9px;font-weight:700">SEP</div><div><div class="cc-name">Separador</div><div class="cc-sub">Fases</div></div></div>
+        </div></div>
+      </div>
+
+
+      <!-- 6. MOTORES / ACCIONAMIENTOS -->
+      <div class="lib-cat" id="cat-motores">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-motores')">
+          <div class="lib-cat-bar" style="background:#1565c0"></div>
+          <div class="lib-cat-icon" style="color:#1565c0">⚡</div>
+          <div class="lib-cat-name">Motores / Accion.</div>
+          <div class="lib-cat-count">5</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="motor-starter"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px;font-weight:700">MST</div><div><div class="cc-name">Arrancador</div><div class="cc-sub">Run/Fault/Ready</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="vfd-faceplate"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#29b6f6;font-size:9px;font-weight:700">VFD</div><div><div class="cc-name">Variador VFD</div><div class="cc-sub">Hz/RPM/A completo</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="servo-axis"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px;font-weight:700">SRV</div><div><div class="cc-name">Eje Servo</div><div class="cc-sub">Pos/Target/Enable</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="motor-runtime"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">⏱h</div><div><div class="cc-name">Horas Motor</div><div class="cc-sub">Control mantenimiento</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="brake-display"><div class="cc-ico" style="background:rgba(84,110,122,.12);color:#546e7a;font-size:9px;font-weight:700">BRK</div><div><div class="cc-name">Freno</div><div class="cc-sub">Activo/Liberado</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 7. CONTROL / REGULACIÓN -->
+      <div class="lib-cat" id="cat-control">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-control')">
+          <div class="lib-cat-bar" style="background:#f9a825"></div>
+          <div class="lib-cat-icon" style="color:#f9a825">⊛</div>
+          <div class="lib-cat-name">Control / Regulac.</div>
+          <div class="lib-cat-count">6</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="pid-controller"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px;font-weight:700">PID</div><div><div class="cc-name">Bloque PID</div><div class="cc-sub">SP/PV/MV/Mode</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="sequence-stepper"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px;font-weight:700">SEQ</div><div><div class="cc-name">Secuenciador</div><div class="cc-sub">Pasos visuales</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="timer-display"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0">⏱</div><div><div class="cc-name">Temporizador</div><div class="cc-sub">Con barra progreso</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="counter-display"><div class="cc-ico" style="background:rgba(46,125,50,.12);color:#2e7d32;font-size:12px;font-weight:700">0</div><div><div class="cc-name">Contador</div><div class="cc-sub">CV / Preset</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="interlock-display"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px;font-weight:700">IL</div><div><div class="cc-name">Interlocks</div><div class="cc-sub">Hasta 8 cond.</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="manual-auto-switch"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px;font-weight:700">A/M</div><div><div class="cc-name">Auto / Manual</div><div class="cc-sub">Selector modo</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 8. ELÉCTRICO / POTENCIA -->
+      <div class="lib-cat" id="cat-electrico">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-electrico')">
+          <div class="lib-cat-bar" style="background:#f57c00"></div>
+          <div class="lib-cat-icon" style="color:#f57c00">⚡</div>
+          <div class="lib-cat-name">Eléctrico / Potencia</div>
+          <div class="lib-cat-count">5</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="circuit-breaker"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px;font-weight:700">MCB</div><div><div class="cc-name">Interruptor</div><div class="cc-sub">Cerrado/Disparado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="contactor-display"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px;font-weight:700">KM</div><div><div class="cc-name">Contactor</div><div class="cc-sub">Bobina + estado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="power-meter"><div class="cc-ico" style="background:rgba(245,124,0,.12);color:#f57c00;font-size:9px;font-weight:700">kW</div><div><div class="cc-name">Medidor Potencia</div><div class="cc-sub">kW/V/A/PF</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="ups-display"><div class="cc-ico" style="background:rgba(46,125,50,.12);color:#2e7d32;font-size:9px;font-weight:700">UPS</div><div><div class="cc-name">UPS</div><div class="cc-sub">Batería + carga</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="generator-display"><div class="cc-ico" style="background:rgba(84,110,122,.12);color:#546e7a;font-size:9px;font-weight:700">GEN</div><div><div class="cc-name">Generador</div><div class="cc-sub">Hz/V/kW</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 9. PRODUCCIÓN / CALIDAD -->
+      <div class="lib-cat" id="cat-produccion2">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-produccion2')">
+          <div class="lib-cat-bar" style="background:#2e7d32"></div>
+          <div class="lib-cat-icon" style="color:#2e7d32">◈</div>
+          <div class="lib-cat-name">Producción / Calidad</div>
+          <div class="lib-cat-count">4</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="batch-display"><div class="cc-ico" style="background:rgba(106,27,154,.12);color:#ce93d8;font-size:9px;font-weight:700">BTCH</div><div><div class="cc-name">Batch / Lote</div><div class="cc-sub">Pasos + progreso</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="production-counter"><div class="cc-ico" style="background:rgba(46,125,50,.12);color:#2e7d32;font-size:9px;font-weight:700">CNT</div><div><div class="cc-name">Contador Prod.</div><div class="cc-sub">Buenas/Malas/Target</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="cycle-time"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">⏱s</div><div><div class="cc-name">Tiempo Ciclo</div><div class="cc-sub">Actual/Ref/Min/Max</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="quality-gauge"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px;font-weight:700">OEE</div><div><div class="cc-name">OEE / Calidad</div><div class="cc-sub">Disponib/Rend/Cal</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 10. SEGURIDAD -->
+      <div class="lib-cat" id="cat-seguridad2">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-seguridad2')">
+          <div class="lib-cat-bar" style="background:#c62828"></div>
+          <div class="lib-cat-icon" style="color:#c62828">⚠</div>
+          <div class="lib-cat-name">Seguridad</div>
+          <div class="lib-cat-count">3</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="safety-door"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px;font-weight:700">SD</div><div><div class="cc-name">Puerta Seguridad</div><div class="cc-sub">Open/Locked/Bypass</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="estop-circuit"><div class="cc-ico" style="background:#c62828;color:#fff;font-size:9px;font-weight:700">ES</div><div><div class="cc-name">Circuito E-Stop</div><div class="cc-sub">OK/Fault/Reset</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="two-hand-control"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px;font-weight:700">2H</div><div><div class="cc-name">Control 2 Manos</div><div class="cc-sub">H1+H2 simultáneo</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- UTILITIES -->
+      <div class="lib-cat" id="cat-utilities">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-utilities')">
+          <div class="lib-cat-bar" style="background:#00838f"></div>
+          <div class="lib-cat-icon" style="color:#00838f">⌭</div>
+          <div class="lib-cat-name">Utilities</div>
+          <div class="lib-cat-count">2</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="pump-station"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px;font-weight:700">PS</div><div><div class="cc-name">Estación Bombeo</div><div class="cc-sub">2 bombas + nivel</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="compressed-air"><div class="cc-ico" style="background:rgba(0,131,143,.12);color:#00838f">∿</div><div><div class="cc-name">Aire Comprimido</div><div class="cc-sub">Presión + caudal</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 11. SENSORES -->
+      <div class="lib-cat" id="cat-sensores">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-sensores')">
+          <div class="lib-cat-bar" style="background:#f57c00"></div>
+          <div class="lib-cat-icon" style="color:#f57c00">◈</div>
+          <div class="lib-cat-name">Sensores</div>
+          <div class="lib-cat-count">10</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="sensor-prox"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825">⊙</div><div><div class="cc-name">Prox. Inductivo</div><div class="cc-sub">Detección metálica</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="sensor-balancin"><div class="cc-ico" style="background:rgba(0,200,83,.12);color:#00c853">⊣</div><div><div class="cc-name">Fin de Carrera</div><div class="cc-sub">Balancín / contacto</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="sensor-foto"><div class="cc-ico" style="background:rgba(0,229,255,.12);color:#00e5ff">⊸</div><div><div class="cc-name">Fotoeléctrico</div><div class="cc-sub">Barrera / reflexión</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="sensor-encoder"><div class="cc-ico" style="background:rgba(41,182,246,.12);color:#29b6f6">◎</div><div><div class="cc-name">Encoder</div><div class="cc-sub">Posición / velocidad</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="sensor-flow"><div class="cc-ico" style="background:rgba(0,172,193,.12);color:#00acc1">≈</div><div><div class="cc-name">Caudalímetro</div><div class="cc-sub">Medida de flujo</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="sensor-pressure"><div class="cc-ico" style="background:rgba(239,83,80,.12);color:#ef5350">↑P</div><div><div class="cc-name">Presostato</div><div class="cc-sub">Presión / umbral</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="sensor-temp"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825">°C</div><div><div class="cc-name">Temperatura</div><div class="cc-sub">PT100 / termopar</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="sensor-ultra"><div class="cc-ico" style="background:rgba(156,39,176,.12);color:#9c27b0">))))</div><div><div class="cc-name">Ultrasónico</div><div class="cc-sub">Distancia</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="sensor-rfid"><div class="cc-ico" style="background:rgba(0,229,255,.12);color:#00e5ff">RF</div><div><div class="cc-name">RFID</div><div class="cc-sub">Lectura de tags</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="sensor-vfd"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0">VFD</div><div><div class="cc-name">Variador VFD</div><div class="cc-sub">Hz / estado run</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 12. NAVEGACIÓN / SISTEMA -->
+      <div class="lib-cat" id="cat-nav">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-nav')">
+          <div class="lib-cat-bar" style="background:#263238"></div>
+          <div class="lib-cat-icon" style="color:#607d8b">⊕</div>
+          <div class="lib-cat-name">Navegación / Sistema</div>
+          <div class="lib-cat-count">6</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="nav-button"><div class="cc-ico">→</div><div><div class="cc-name">Botón Nav.</div><div class="cc-sub">Ir a pantalla</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="nav-menu"><div class="cc-ico">☰</div><div><div class="cc-name">Menú Nav.</div><div class="cc-sub">Panel de pantallas</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="clock-widget"><div class="cc-ico" style="background:#0f0f0d;color:#f0f0e8;font-size:9px">⏱</div><div><div class="cc-name">Reloj</div><div class="cc-sub">Hora del sistema</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="plc-info"><div class="cc-ico" style="background:#0f0f0d;color:#f0f0e8;font-size:9px">CPU</div><div><div class="cc-name">Info PLC</div><div class="cc-sub">Estado conexión</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="image-static"><div class="cc-ico">🖼</div><div><div class="cc-name">Imagen</div><div class="cc-sub">Logotipo / fondo</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="info-card"><div class="cc-ico" style="background:#1565c0;color:#fff;font-size:12px">ℹ</div><div><div class="cc-name">Info Card</div><div class="cc-sub">Tarjeta de datos PLC</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- 13. DECORACIÓN -->
+      <div class="lib-cat" id="cat-layout">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-layout')">
+          <div class="lib-cat-bar" style="background:#546e7a"></div>
+          <div class="lib-cat-icon" style="color:#546e7a">▭</div>
+          <div class="lib-cat-name">Layout</div>
+          <div class="lib-cat-count">5</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="frame-box"><div class="cc-ico" style="background:rgba(26,26,24,.06)">▭</div><div><div class="cc-name">Marco / Grupo</div><div class="cc-sub">Agrupa controles</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="separator-h"><div class="cc-ico" style="background:rgba(26,26,24,.06)">─</div><div><div class="cc-name">Separador H</div><div class="cc-sub">Línea divisoria</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="title-banner"><div class="cc-ico" style="background:#1a1a18;color:#f0f0e8;font-size:9px">HDR</div><div><div class="cc-name">Banner Título</div><div class="cc-sub">Cabecera de sección</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="text-block"><div class="cc-ico" style="background:rgba(26,26,24,.06)">¶</div><div><div class="cc-name">Texto Fijo</div><div class="cc-sub">Párrafo multilinea</div></div></div>
+        </div></div>
+      </div>
+
+      <div class="lib-cat" id="cat-anotacion">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-anotacion')">
+          <div class="lib-cat-bar" style="background:#1565c0"></div>
+          <div class="lib-cat-icon" style="color:#1565c0">⬡</div>
+          <div class="lib-cat-name">Anotación</div>
+          <div class="lib-cat-count">1</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="tooltip-node"><div class="cc-ico" style="background:rgba(21,101,192,.10);color:#1565c0;font-size:12px">⬡</div><div><div class="cc-name">Nodo Tooltip</div><div class="cc-sub">Info conexiones hover</div></div></div>
+        </div></div>
+      </div>
+
+      <div class="lib-cat" id="cat-formas">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-formas')">
+          <div class="lib-cat-bar" style="background:#6a1b9a"></div>
+          <div class="lib-cat-icon" style="color:#6a1b9a">○</div>
+          <div class="lib-cat-name">Formas</div>
+          <div class="lib-cat-count">5</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="shape-rect"><div class="cc-ico" style="background:rgba(106,27,154,.08);color:#6a1b9a">▭</div><div><div class="cc-name">Rectángulo</div><div class="cc-sub">Relleno / borde</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="shape-circle"><div class="cc-ico" style="background:rgba(106,27,154,.08);color:#6a1b9a">○</div><div><div class="cc-name">Círculo / Elipse</div><div class="cc-sub">Relleno / borde</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="shape-line"><div class="cc-ico" style="background:rgba(106,27,154,.08);color:#6a1b9a">╱</div><div><div class="cc-name">Línea recta</div><div class="cc-sub">Libre / diagonal</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="shape-curve"><div class="cc-ico" style="background:rgba(106,27,154,.08);color:#6a1b9a">∿</div><div><div class="cc-name">Línea curva</div><div class="cc-sub">Bézier ajustable</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="shape-triangle"><div class="cc-ico" style="background:rgba(106,27,154,.08);color:#6a1b9a">△</div><div><div class="cc-name">Triángulo</div><div class="cc-sub">Relleno / borde</div></div></div>
+        </div></div>
+      </div>
+
+      <div class="lib-cat" id="cat-construccion">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-construccion')">
+          <div class="lib-cat-bar" style="background:#8b5a2b"></div>
+          <div class="lib-cat-icon" style="color:#8b5a2b">👷</div>
+          <div class="lib-cat-name">Construcción</div>
+          <div class="lib-cat-count">15</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="deco-worker"><div class="cc-ico">👷</div><div><div class="cc-name">Operario</div><div class="cc-sub">Trabajador construcción</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-person-walk"><div class="cc-ico">🚶</div><div><div class="cc-name">Persona</div><div class="cc-sub">Silueta caminando</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-forklift"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px">⇈</div><div><div class="cc-name">Carretilla</div><div class="cc-sub">Elevadora</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-truck"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:14px">🚚</div><div><div class="cc-name">Camión</div><div class="cc-sub">Transporte</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-excavator"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px">EXC</div><div><div class="cc-name">Excavadora</div><div class="cc-sub">Maquinaria pesada</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-crane"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px">GRÚ</div><div><div class="cc-name">Grúa</div><div class="cc-sub">Elevación</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-elevator"><div class="cc-ico" style="background:rgba(26,26,24,.06)">⇅</div><div><div class="cc-name">Elevador</div><div class="cc-sub">Ascensor / montacargas</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-conveyor"><div class="cc-ico" style="background:rgba(26,26,24,.06)">═══</div><div><div class="cc-name">Cinta Transp.</div><div class="cc-sub">Transportador</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-rack"><div class="cc-ico" style="background:rgba(26,26,24,.06)">⊞</div><div><div class="cc-name">Estantería</div><div class="cc-sub">Rack almacén</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-pallet"><div class="cc-ico" style="background:rgba(139,90,43,.15);color:#8b5a2b;font-size:9px">PAL</div><div><div class="cc-name">Palet</div><div class="cc-sub">Europalet</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-barrel"><div class="cc-ico" style="background:rgba(26,26,24,.06)">⊙</div><div><div class="cc-name">Barril</div><div class="cc-sub">Bidón industrial</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-brickwall"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828;font-size:9px">▦</div><div><div class="cc-name">Pared Ladrillo</div><div class="cc-sub">Cerramiento</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-scaffold"><div class="cc-ico" style="background:rgba(26,26,24,.06)">⋕</div><div><div class="cc-name">Andamio</div><div class="cc-sub">Estructura tubular</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-wheelbarrow"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">WB</div><div><div class="cc-name">Carretilla</div><div class="cc-sub">De mano</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-cement-mixer"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">CM</div><div><div class="cc-name">Hormigonera</div><div class="cc-sub">Mezcladora</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-bulldozer"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px">BUL</div><div><div class="cc-name">Bulldozer</div><div class="cc-sub">Niveladora</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-dump-truck"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px">DT</div><div><div class="cc-name">Volquete</div><div class="cc-sub">Camión tolva</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-ladder"><div class="cc-ico" style="background:rgba(26,26,24,.06)">⋮⋮</div><div><div class="cc-name">Escalera</div><div class="cc-sub">De mano</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-toolbox"><div class="cc-ico" style="background:rgba(26,26,24,.06)">🧰</div><div><div class="cc-name">Caja Herram.</div><div class="cc-sub">Toolbox</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-compressor"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">COMP</div><div><div class="cc-name">Compresor</div><div class="cc-sub">Aire comprimido</div></div></div>
+        </div></div>
+      </div>
+
+      <div class="lib-cat" id="cat-seguridad-deco">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-seguridad-deco')">
+          <div class="lib-cat-bar" style="background:#c62828"></div>
+          <div class="lib-cat-icon" style="color:#c62828">⚠</div>
+          <div class="lib-cat-name">Seguridad</div>
+          <div class="lib-cat-count">10</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="deco-cone"><div class="cc-ico" style="color:#f57c00">▽</div><div><div class="cc-name">Cono</div><div class="cc-sub">Señalización vial</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-road-barrier"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828;font-size:9px">|||</div><div><div class="cc-name">Barrera Vial</div><div class="cc-sub">New Jersey</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-sign-hard"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825">⚠</div><div><div class="cc-name">Señal Casco</div><div class="cc-sub">EPI obligatorio</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-helmet"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825">⛑</div><div><div class="cc-name">Casco</div><div class="cc-sub">Seguridad</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-fire-ext"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828;font-size:9px">EXT</div><div><div class="cc-name">Extintor</div><div class="cc-sub">Contra incendios</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-safety-exit"><div class="cc-ico" style="background:rgba(46,125,50,.12);color:#2e7d32;font-size:9px">EXIT</div><div><div class="cc-name">Salida Emerg.</div><div class="cc-sub">Señal evacuación</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-first-aid"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828">✚</div><div><div class="cc-name">Botiquín</div><div class="cc-sub">Primeros auxilios</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-electric-hazard"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825">⚡</div><div><div class="cc-name">Riesgo Eléctr.</div><div class="cc-sub">Alta tensión</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-wire-spool"><div class="cc-ico" style="background:rgba(0,229,255,.12);color:#00e5ff">⊙</div><div><div class="cc-name">Bobina Cable</div><div class="cc-sub">Carrete</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="deco-welding"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825">✦</div><div><div class="cc-name">Soldadura</div><div class="cc-sub">Equipo de soldar</div></div></div>
+        </div></div>
+      </div>
+
+      <div class="lib-cat" id="cat-automocion">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-automocion')">
+          <div class="lib-cat-bar" style="background:#1565c0"></div>
+          <div class="lib-cat-icon" style="color:#1565c0">🚗</div>
+          <div class="lib-cat-name">Automoción</div>
+          <div class="lib-cat-count">19</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="auto-car-side"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px">CAR</div><div><div class="cc-name">Coche Lateral</div><div class="cc-sub">Vista perfil</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-car-top"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px">TOP</div><div><div class="cc-name">Coche Planta</div><div class="cc-sub">Vista superior</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-wheel"><div class="cc-ico" style="background:rgba(26,26,24,.06)">◎</div><div><div class="cc-name">Rueda</div><div class="cc-sub">Neumático</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-tyre"><div class="cc-ico" style="background:rgba(26,26,24,.06)">○</div><div><div class="cc-name">Neumático</div><div class="cc-sub">Tyre</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-engine"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">ENG</div><div><div class="cc-name">Motor</div><div class="cc-sub">Bloque motor</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-gearbox"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">GBX</div><div><div class="cc-name">Caja Cambios</div><div class="cc-sub">Transmisión</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-battery-ev"><div class="cc-ico" style="background:rgba(46,125,50,.12);color:#2e7d32">⚡</div><div><div class="cc-name">Batería EV</div><div class="cc-sub">Eléctrico</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-abs-module"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828;font-size:9px">ABS</div><div><div class="cc-name">Módulo ABS</div><div class="cc-sub">Freno antibloqueo</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-brake-disc"><div class="cc-ico" style="background:rgba(26,26,24,.06)">◎</div><div><div class="cc-name">Disco Freno</div><div class="cc-sub">Disco ventilado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-caliper"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">CAL</div><div><div class="cc-name">Pinza Freno</div><div class="cc-sub">Caliper</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-suspension"><div class="cc-ico" style="background:rgba(26,26,24,.06)">⥯</div><div><div class="cc-name">Suspensión</div><div class="cc-sub">Amortiguador</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-exhaust"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">EXH</div><div><div class="cc-name">Escape</div><div class="cc-sub">Silenciador</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-dashboard"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">DAS</div><div><div class="cc-name">Cuadro</div><div class="cc-sub">Dashboard</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-robot-arm"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px">ROB</div><div><div class="cc-name">Brazo Robot</div><div class="cc-sub">Articulado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-spot-weld"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px">SW</div><div><div class="cc-name">Soldadura Punto</div><div class="cc-sub">Spot welding</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-paint-gun"><div class="cc-ico" style="background:rgba(106,27,154,.12);color:#6a1b9a;font-size:9px">PNT</div><div><div class="cc-name">Pistola Pintura</div><div class="cc-sub">Cabina pintura</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-car-body"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px">BDY</div><div><div class="cc-name">Carrocería</div><div class="cc-sub">Body shell</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-press-machine"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">PRS</div><div><div class="cc-name">Prensa</div><div class="cc-sub">Estampación</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-vin-scanner"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">VIN</div><div><div class="cc-name">Lector VIN</div><div class="cc-sub">Escáner código</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="auto-agv"><div class="cc-ico" style="background:rgba(46,125,50,.12);color:#2e7d32;font-size:9px">AGV</div><div><div class="cc-name">AGV Auto</div><div class="cc-sub">Guiado automático</div></div></div>
+        </div></div>
+      </div>
+
+      <div class="lib-cat" id="cat-fabrica">
+        <div class="lib-cat-hdr" onclick="toggleCat('cat-fabrica')">
+          <div class="lib-cat-bar" style="background:#37474f"></div>
+          <div class="lib-cat-icon" style="color:#37474f">🏭</div>
+          <div class="lib-cat-name">Fábrica</div>
+          <div class="lib-cat-count">30</div>
+          <div class="lib-cat-arrow">▶</div>
+        </div>
+        <div class="lib-cat-body"><div class="lib-cat-inner">
+          <div class="comp-card" draggable="true" data-tipo="fab-robot-industrial"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px">ROB</div><div><div class="cc-name">Robot Industrial</div><div class="cc-sub">6 ejes</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-cnc-machine"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">CNC</div><div><div class="cc-name">Máq. CNC</div><div class="cc-sub">Mecanizado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-lathe"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">TRN</div><div><div class="cc-name">Torno</div><div class="cc-sub">Torneado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-drill-press"><div class="cc-ico" style="background:rgba(26,26,24,.06)">⊥</div><div><div class="cc-name">Taladradora</div><div class="cc-sub">Columna</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-hydraulic-press"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px">HYD</div><div><div class="cc-name">Prensa Hidráulica</div><div class="cc-sub">Alta presión</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-welding-station"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px">WLD</div><div><div class="cc-name">Est. Soldadura</div><div class="cc-sub">Puesto MIG/TIG</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-paint-booth"><div class="cc-ico" style="background:rgba(106,27,154,.12);color:#6a1b9a;font-size:9px">CBN</div><div><div class="cc-name">Cabina Pintura</div><div class="cc-sub">Spray booth</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-oven-industrial"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828;font-size:9px">HRN</div><div><div class="cc-name">Horno Industrial</div><div class="cc-sub">Tratamiento térmico</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-cooling-tower"><div class="cc-ico" style="background:rgba(0,131,143,.12);color:#00838f;font-size:9px">CLG</div><div><div class="cc-name">Torre Enfriamiento</div><div class="cc-sub">Cooling tower</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-boiler"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828;font-size:9px">BLR</div><div><div class="cc-name">Caldera</div><div class="cc-sub">Vapor / agua</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-compressor-ind"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">CMP</div><div><div class="cc-name">Compresor Ind.</div><div class="cc-sub">Industrial</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-generator"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px">GEN</div><div><div class="cc-name">Generador</div><div class="cc-sub">Grupo electrógeno</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-transformer"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825;font-size:9px">TRF</div><div><div class="cc-name">Transformador</div><div class="cc-sub">Eléctrico</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-switchboard"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">QDR</div><div><div class="cc-name">Cuadro Eléctrico</div><div class="cc-sub">Switchboard</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-plc-cabinet"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px">PLC</div><div><div class="cc-name">Armario PLC</div><div class="cc-sub">Gabinete control</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-hmi-panel"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px">HMI</div><div><div class="cc-name">Panel HMI</div><div class="cc-sub">Pantalla operador</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-safety-fence"><div class="cc-ico" style="background:rgba(249,168,37,.12);color:#f9a825">⊞</div><div><div class="cc-name">Valla Seguridad</div><div class="cc-sub">Perimetral</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-agv-station"><div class="cc-ico" style="background:rgba(46,125,50,.12);color:#2e7d32;font-size:9px">AGV</div><div><div class="cc-name">Estación AGV</div><div class="cc-sub">Carga / parada</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-quality-station"><div class="cc-ico" style="background:rgba(46,125,50,.12);color:#2e7d32;font-size:9px">QC</div><div><div class="cc-name">Est. Calidad</div><div class="cc-sub">Control QC</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-packaging"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">PKG</div><div><div class="cc-name">Empaquetado</div><div class="cc-sub">Packaging</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-palletizer"><div class="cc-ico" style="background:rgba(139,90,43,.15);color:#8b5a2b;font-size:9px">PAL</div><div><div class="cc-name">Paletizador</div><div class="cc-sub">Robot paletizado</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-scara-robot"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px">SCA</div><div><div class="cc-name">Robot SCARA</div><div class="cc-sub">4 ejes</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-delta-robot"><div class="cc-ico" style="background:rgba(21,101,192,.12);color:#1565c0;font-size:9px">DEL</div><div><div class="cc-name">Robot Delta</div><div class="cc-sub">Alta velocidad</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-cobot"><div class="cc-ico" style="background:rgba(46,125,50,.12);color:#2e7d32;font-size:9px">COB</div><div><div class="cc-name">Cobot</div><div class="cc-sub">Colaborativo</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-vision-system"><div class="cc-ico" style="background:rgba(0,131,143,.12);color:#00838f;font-size:9px">VIS</div><div><div class="cc-name">Visión Artificial</div><div class="cc-sub">Cámara industrial</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-laser-cutter"><div class="cc-ico" style="background:rgba(198,40,40,.12);color:#c62828;font-size:9px">LAS</div><div><div class="cc-name">Corte Láser</div><div class="cc-sub">Láser CO2 / fibra</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-3d-printer"><div class="cc-ico" style="background:rgba(106,27,154,.12);color:#6a1b9a;font-size:9px">3DP</div><div><div class="cc-name">Impresora 3D</div><div class="cc-sub">FDM / SLA</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-injection-mold"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">INY</div><div><div class="cc-name">Inyección Plást.</div><div class="cc-sub">Molde inyección</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-extruder"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">EXT</div><div><div class="cc-name">Extrusora</div><div class="cc-sub">Perfil continuo</div></div></div>
+          <div class="comp-card" draggable="true" data-tipo="fab-winding-machine"><div class="cc-ico" style="background:rgba(26,26,24,.06);font-size:9px">WND</div><div><div class="cc-name">Bobinadora</div><div class="cc-sub">Devanado</div></div></div>
+        </div></div>
+      </div>
+
+      <div class="lp-sep"></div>
+      <div class="lib-settings">
+        <div class="lib-settings-title">Canvas</div>
+        <div class="bg-label">Fondo</div>
+        <div class="bg-row">
+          <div class="bg-opt sel" style="background:#f0f0ec" data-bg="#f0f0ec" onclick="cambiarFondo(this)">GRS</div>
+          <div class="bg-opt" style="background:#ffffff;border:1px solid #ddd" data-bg="#ffffff" onclick="cambiarFondo(this)">BLC</div>
+          <div class="bg-opt" style="background:#1e2428;color:#aaa" data-bg="#1e2428" onclick="cambiarFondo(this)">OSC</div>
+        </div>
+        <div class="lib-settings-title">Atajos</div>
+        <div class="help-block">
+          Del — eliminar<br>
+          Ctrl+Z / Y — deshacer/rehacer<br>
+          Ctrl+D — duplicar<br>
+          Ctrl+A — selec. todo<br>
+          Flechas — mover 8px<br>
+          Shift+Flechas — 24px<br>
+          Shift+Clic — multi sel.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="cwrap" ondragover="permitirSoltar(event)" ondrop="soltarElemento(event)">
+    <div id="cgrid"></div>
+    <div id="res-frame"><span id="res-label">800 × 480 px — MTP700</span></div>
+
+    <div id="align-bar">
+      <span style="font-family:DM Mono,monospace;font-size:8px;color:var(--mid);margin-right:3px">ALINEAR</span>
+      <button class="ab-btn" onclick="alinearElementos('izq')">← IZQ</button>
+      <button class="ab-btn" onclick="alinearElementos('centro-h')">↔ CTR</button>
+      <button class="ab-btn" onclick="alinearElementos('der')">DER →</button>
+      <div class="ab-sep"></div>
+      <button class="ab-btn" onclick="alinearElementos('arr')">↑ ARR</button>
+      <button class="ab-btn" onclick="alinearElementos('centro-v')">↕ MED</button>
+      <button class="ab-btn" onclick="alinearElementos('abj')">ABJ ↓</button>
+      <div class="ab-sep"></div>
+      <button class="ab-btn" onclick="distribuirElementos('h')">⇔ DIST H</button>
+      <button class="ab-btn" onclick="distribuirElementos('v')">⇕ DIST V</button>
+      <div class="ab-sep"></div>
+      <span style="font-family:DM Mono,monospace;font-size:8px;color:var(--mid);margin-right:3px">CAPAS</span>
+      <button class="ab-btn" title="Traer al frente (Ctrl+Shift+↑)" onclick="traerAlFrente()">▲▲ FRENTE</button>
+      <button class="ab-btn" title="Subir una capa (Ctrl+↑)" onclick="subirCapa()">▲ SUBIR</button>
+      <button class="ab-btn" title="Bajar una capa (Ctrl+↓)" onclick="bajarCapa()">▼ BAJAR</button>
+      <button class="ab-btn" title="Enviar al fondo (Ctrl+Shift+↓)" onclick="enviarAlFondo()">▼▼ FONDO</button>
+    </div>
+
+    <div id="cinner">
+      <div id="cstage">
+        <div id="selbox"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="rpanel">
+    <div id="rpanel-scroll">
+      <div id="rp-vacio" class="rp-empty">
+        <div class="rp-tico">⬡</div>
+        <div>SELECCIONA UN<br>COMPONENTE</div>
+        <div style="margin-top:10px;opacity:.5;font-size:9px">O ARRASTRA AL CANVAS</div>
+      </div>
+      <div id="rp-props"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="sbar">
+  <div class="si">EL: <b id="si-count">0</b></div>
+  <div class="si">SEL: <b id="si-sel">—</b></div>
+  <div class="si" id="si-pos"></div>
+  <div class="si" id="si-size"></div>
+  <div class="si" style="margin-left:auto">paulocarrasco.dev · HMI Editor v5</div>
+</div>
+
+<div id="modal-plc" class="mov">
+  <div class="mbox mbox-plc">
+    <div class="mhead">
+      <div class="mtitle">CONEXIONES PLC</div>
+      <button class="mcl" onclick="cerrarModal('modal-plc')">×</button>
+    </div>
+    <!-- tabs de PLCs -->
+    <div id="mplc-tabs" class="mplc-tabs"></div>
+    <!-- cuerpo dinámico renderizado por 17_plc.js -->
+    <div id="mplc-body" class="mbody mplc-body"></div>
+    <div class="mfoot">
+      <button class="mbtn" onclick="cerrarModal('modal-plc')">CANCELAR</button>
+      <button class="mbtn ok" onclick="guardarPlc()">GUARDAR</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-export" class="mov">
+  <div class="mbox wide">
+    <div class="mhead">
+      <div class="mtitle">EXPORTAR HTML</div>
+      <button class="mcl" onclick="cerrarModal('modal-export')">×</button>
+    </div>
+    <div class="mbody">
+      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--mid);margin-bottom:8px;letter-spacing:1px">
+        HTML GENERADO — LISTO PARA CARGAR EN EL PLC S7-1200
+      </div>
+      <textarea id="exp-ta" readonly></textarea>
+    </div>
+    <div class="mfoot">
+      <button class="mbtn" onclick="cerrarModal('modal-export')">CERRAR</button>
+      <button class="mbtn ok" onclick="copiarExport()">COPIAR</button>
+      <button class="mbtn ok" onclick="descargarExport()">DESCARGAR .HTML</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-alarm-names" class="mov">
+  <div class="mbox" style="max-width:640px;width:96vw">
+    <div class="mhdr">
+      <div class="mtitle" id="alarm-names-title">CONFIGURAR NOMBRES DE ALARMAS</div>
+      <button class="mcl" onclick="cerrarModal('modal-alarm-names')">×</button>
+    </div>
+    <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--mid);line-height:1.6">
+        Escribe un nombre por línea. El índice de cada línea corresponde al bit del array (línea 1 = bit [0]).<br>
+        Puedes pegar directamente desde Excel o un fichero de texto.
+      </div>
+      <textarea id="alarm-names-ta" rows="16"
+        style="width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:2px;
+               padding:10px 12px;font-family:DM Mono,monospace;font-size:11px;
+               color:var(--text);resize:vertical;line-height:1.7;outline:none"
+        placeholder="Fallo motor principal&#10;Presión alta circuito 1&#10;Temperatura zona 2&#10;…"></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <span id="alarm-names-count" style="font-family:DM Mono,monospace;font-size:9px;color:var(--mid)">0 nombres</span>
+        <div style="display:flex;gap:8px">
+          <button class="mbtn" style="background:transparent;color:var(--light);border-color:var(--border)" onclick="cerrarModal('modal-alarm-names')">CANCELAR</button>
+          <button class="mbtn" onclick="guardarNombresAlarmas()">GUARDAR</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL SIMULADOR PLC
+══════════════════════════════════════════ -->
+<div id="plc-sim-panel" class="oculto">
+  <div id="plc-sim-hdr">
+    <div id="plc-sim-hdr-dot"></div>
+    <div id="plc-sim-hdr-title">SIMULADOR PLC</div>
+    <button id="plc-sim-hdr-close" onclick="cerrarSimulador()" title="Cerrar">×</button>
+  </div>
+  <div id="plc-sim-body">
+    <div id="plc-sim-empty">
+      Añade elementos con animación<br>(robots, motores, ruedas, etc.)<br>para probar sus estados aquí.
+    </div>
+  </div>
+  <div id="plc-sim-footer">
+    <button class="plc-sim-footer-btn ok" onclick="simTodoOn()">▶ TODO ON</button>
+    <button class="plc-sim-footer-btn" onclick="actualizarPanelSim()">↺ REFRESCAR</button>
+    <button class="plc-sim-footer-btn" onclick="simTodoOff()">◼ TODO OFF</button>
+  </div>
+</div>
+
+<input type="file" id="inp-cargar" accept=".json" style="display:none" onchange="leerArchivo(event)">
+<input type="file" id="inp-imagen-panel" accept="image/*" style="display:none" onchange="imagenDesdePanelCargada(event)">
+
+<div id="toast"></div>
+
+<!-- ══ MODAL TABLA CONEXIONES PLC ══════════════════════════════ -->
+<div id="modal-tabla-plc" class="mov">
+  <div class="mbox" style="width:94vw;max-width:960px;max-height:90vh;display:flex;flex-direction:column">
+
+    <!-- Cabecera -->
+    <div class="mhead" style="gap:10px;flex-shrink:0">
+      <div class="mtitle">🔌 TABLA CONEXIONES PLC</div>
+      <span id="tplc-count" style="font-family:DM Mono,monospace;font-size:9px;color:var(--mid)"></span>
+      <div style="flex:1"></div>
+      <button class="mcl" onclick="cerrarModal('modal-tabla-plc')">×</button>
+    </div>
+
+    <!-- Barra de modo + filtros -->
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--topbar);flex-shrink:0;flex-wrap:wrap">
+      <!-- Tabs modo -->
+      <div style="display:flex;gap:3px;flex-shrink:0">
+        <button id="tplc-btn-ver"  class="tplc-tab activo" onclick="tplcSetModo('ver')">👁 VER</button>
+        <button id="tplc-btn-conf" class="tplc-tab"        onclick="tplcSetModo('configurar')">⚙ CONFIGURAR</button>
+      </div>
+      <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
+      <!-- Buscador -->
+      <input id="tplc-filtro" class="minp" type="text" placeholder="Buscar ID, tipo, variable..." oninput="filtrarTablaPLC()" style="flex:1;min-width:160px;margin:0;font-size:10px">
+      <!-- Acciones modo configurar -->
+      <div id="tplc-conf-btns" style="display:none;gap:4px;flex-shrink:0">
+        <button class="tplc-tab" onclick="tplcSelTodo(true)"  title="Incluir todos">☑ TODOS</button>
+        <button class="tplc-tab" onclick="tplcSelTodo(false)" title="Excluir todos">☐ NINGUNO</button>
+      </div>
+      <!-- CSV siempre visible -->
+      <button class="mbtn ok" onclick="exportarTablaPLCcsv()" style="padding:4px 10px;font-size:9px;flex-shrink:0">↓ CSV</button>
+    </div>
+
+    <!-- Descripción contextual -->
+    <div id="tplc-desc" style="padding:5px 16px;font-family:DM Mono,monospace;font-size:8px;color:var(--mid);letter-spacing:.8px;border-bottom:1px solid var(--border);flex-shrink:0">
+      Elementos marcados como incluidos y sus variables PLC
+    </div>
+
+    <!-- Tabla -->
+    <div class="mbody" style="padding:0;overflow:auto;flex:1;min-height:0">
+      <table id="tplc-table" style="width:100%;border-collapse:collapse">
+        <thead id="tplc-thead"></thead>
+        <tbody id="tplc-body"></tbody>
+      </table>
+    </div>
+
+    <div id="tplc-pagination" style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;border-top:1px solid var(--border);background:var(--topbar);flex-shrink:0;min-height:36px"></div>
+
+    <div class="mfoot" style="flex-shrink:0">
+      <button class="mbtn" onclick="cerrarModal('modal-tabla-plc')">CERRAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     JS — separado por módulos funcionales
+     (orden importante: dependencias primero)
+═══════════════════════════════════════════ -->
+<script src="js/01_estado-global.js"></script>
+<script src="js/02_drag-drop.js"></script>
+<script src="js/03_renderizado.js"></script>
+<script src="js/04_html-interior.js"></script>
+<script src="js/05_seleccion.js"></script>
+<script src="js/06_seleccion-caja.js"></script>
+<script src="js/07_mover.js"></script>
+<script src="js/08_redimensionar.js"></script>
+<script src="js/09_guias.js"></script>
+<script src="js/10_alinear.js"></script>
+<script src="js/10b_capas.js"></script>
+<script src="js/10c_contexmenu.js"></script>
+<script src="js/11_eliminar.js"></script>
+<script src="js/12_propiedades.js"></script>
+<script src="js/13_atajos-teclado.js"></script>
+<script src="js/14_biblioteca.js"></script>
+<script src="js/15_historial.js"></script>
+<script src="js/16_utilidades.js"></script>
+<script src="js/17_plc.js"></script>
+<script src="js/18_proyecto.js"></script>
+<script src="js/19_modales.js"></script>
+<script src="js/28_multi-plc.js"></script>
+  <script src="js/29_popup-editor.js"></script>
+<script src="js/20_generador-html.js"></script>
+<script src="js/21_exportar.js"></script>
+<script src="js/22_init.js"></script>
+<script src="js/23_plc-simulador.js"></script>
+<script src="js/25_tabla-plc.js"></script>
+  <script src="js/26_infocard.js"></script>
+  <script src="js/27_rotar.js"></script>
+<script src="js/30_demo.js"></script>
+
+<!-- ═══ MODAL: Editor Alarmas Lista TIA ═══ -->
+<div id="modal-allist-editor" class="mov">
+  <div class="mpan" style="max-width:680px;width:96%">
+    <div class="mhdr">
+      <div class="mtit">EDITAR ALARMAS — TABLA TIA PORTAL</div>
+      <button class="mcl" onclick="cerrarModal('modal-allist-editor')">×</button>
+    </div>
+    <div class="mbdy" style="padding:16px">
+      <p style="font-family:DM Mono,monospace;font-size:9px;color:var(--mid);letter-spacing:1px;margin:0 0 12px">
+        Una alarma por línea. El número de líneas en ambas columnas debe coincidir.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--text);margin-bottom:6px">NOMBRES / ETIQUETAS</div>
+          <textarea id="allist-names-ta" rows="20" placeholder="Motor arranque&#10;Fallo bomba 1&#10;Presión alta&#10;Temperatura crítica&#10;..."
+            style="width:100%;font-family:DM Mono,monospace;font-size:11px;background:var(--canv);color:var(--text);border:1px solid var(--border);border-radius:2px;padding:8px;resize:vertical;box-sizing:border-box;line-height:1.7"></textarea>
+        </div>
+        <div>
+          <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--text);margin-bottom:6px">VARIABLES PLC</div>
+          <textarea id="allist-vars-ta" rows="20" placeholder="&quot;DB1&quot;.Alarm1&#10;&quot;DB1&quot;.Alarm2&#10;&quot;DB1&quot;.Alarm3&#10;&quot;DB1&quot;.Alarm4&#10;..."
+            style="width:100%;font-family:DM Mono,monospace;font-size:11px;background:var(--canv);color:var(--text);border:1px solid var(--border);border-radius:2px;padding:8px;resize:vertical;box-sizing:border-box;line-height:1.7"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-family:DM Mono,monospace;font-size:9px;color:var(--mid)" id="allist-count">0 alarmas configuradas</div>
+    </div>
+    <div class="mftr">
+      <button class="mbtn" style="background:transparent;color:var(--light);border-color:var(--border)" onclick="cerrarModal('modal-allist-editor')">CANCELAR</button>
+      <button class="mbtn" onclick="guardarAlarmasList()">GUARDAR</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════ MODAL EDITOR DE POPUP ══════════════ -->
+<div id="modal-popup-editor" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);">
+  <div style="position:absolute;inset:32px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;">
+    <!-- Header -->
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--surface);">
+      <span style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:3px;color:var(--mid)">POPUP</span>
+      <span id="popup-editor-title" style="font-family:DM Mono,monospace;font-size:11px;color:var(--text);font-weight:600;flex:1">EDITOR DE POPUP</span>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <!-- Historial -->
+        <button onclick="_peDeshacer()" title="Deshacer (Ctrl+Z)" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">↩</button>
+        <button onclick="_peRehacer()" title="Rehacer (Ctrl+Y)" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">↪</button>
+        <div style="width:1px;height:20px;background:var(--border);margin:0 2px;"></div>
+        <!-- Portapapeles -->
+        <button onclick="_peCopiar()" title="Copiar (Ctrl+C)" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">⎘</button>
+        <button onclick="_peDuplicar()" title="Duplicar (Ctrl+D)" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">⧉</button>
+        <button onclick="_pePegar()" title="Pegar (Ctrl+V)" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">⎗</button>
+        <div style="width:1px;height:20px;background:var(--border);margin:0 2px;"></div>
+        <!-- Rotación -->
+        <button onclick="(function(){var e=_peEls.find(function(x){return x.id===_peSel;});if(e){e.props=e.props||{};e.props.rotation=((Number(e.props.rotation)||0)-15+360)%360;_peRenderAll();_peRenderProps();}})()" title="Rotar −15° ( [ )" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">↺</button>
+        <button onclick="(function(){var e=_peEls.find(function(x){return x.id===_peSel;});if(e){e.props=e.props||{};e.props.rotation=0;_peRenderAll();_peRenderProps();}})()" title="Resetear rotación" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">0°</button>
+        <button onclick="(function(){var e=_peEls.find(function(x){return x.id===_peSel;});if(e){e.props=e.props||{};e.props.rotation=((Number(e.props.rotation)||0)+15)%360;_peRenderAll();_peRenderProps();}})()" title="Rotar +15° ( ] )" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">↻</button>
+        <div style="width:1px;height:20px;background:var(--border);margin:0 2px;"></div>
+        <!-- Capas -->
+        <button onclick="_peAlFrente()" title="Traer al frente (Ctrl+Shift+↑)" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">▲▲</button>
+        <button onclick="_peSubirCapa()" title="Subir capa (Ctrl+↑)" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">▲</button>
+        <button onclick="_peBajarCapa()" title="Bajar capa (Ctrl+↓)" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">▼</button>
+        <button onclick="_peAlFondo()" title="Enviar al fondo (Ctrl+Shift+↓)" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--mid);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.borderColor='#1565c0';this.style.color='#1565c0'" onmouseleave="this.style.borderColor='';this.style.color=''">▼▼</button>
+        <div style="width:1px;height:20px;background:var(--border);margin:0 2px;"></div>
+        <button onclick="popupEditorAddEl()" style="padding:4px 12px;background:var(--text);color:var(--bg);border:none;border-radius:2px;font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;cursor:pointer">+ ELEMENTO</button>
+        <button onclick="popupEditorGuardar()" style="padding:4px 14px;background:#1565c0;color:#fff;border:none;border-radius:2px;font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;cursor:pointer">✓ GUARDAR</button>
+        <button onclick="cerrarPopupEditor()" style="width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:50%;color:var(--mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button>
+      </div>
+    </div>
+    <!-- Body: librería + canvas + props -->
+    <div style="flex:1;display:flex;overflow:hidden;min-height:0;">
+      <!-- Librería izquierda -->
+      <div id="popup-lib" style="width:180px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:8px;background:var(--surface);">
+        <div style="font-family:DM Mono,monospace;font-size:8px;letter-spacing:2px;color:var(--mid);padding:4px 2px 8px">ELEMENTOS</div>
+        <!-- Los elementos se generan dinámicamente -->
+      </div>
+      <!-- Canvas del popup -->
+      <div style="flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:flex-start;padding:24px;background:var(--bg);">
+        <div id="popup-canvas-wrap" style="position:relative;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.5);border-radius:4px;flex-shrink:0;">
+          <div id="popup-canvas" style="position:relative;overflow:hidden;"
+            ondragover="event.preventDefault()"
+            ondrop="popupEditorDrop(event)">
+          </div>
+          <!-- Título del popup preview -->
+          <div id="popup-canvas-titlebar" style="position:absolute;top:0;left:0;right:0;height:36px;background:var(--surface);border-bottom:1px solid var(--border);border-radius:4px 4px 0 0;display:flex;align-items:center;padding:0 12px;pointer-events:none;">
+            <span id="popup-canvas-titletext" style="font-family:DM Mono,monospace;font-size:10px;color:var(--text);font-weight:600;flex:1"></span>
+            <div style="width:20px;height:20px;border-radius:50%;background:#c62828;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px">×</div>
+          </div>
+        </div>
+      </div>
+      <!-- Panel de propiedades derecha -->
+      <div id="popup-props-panel" style="width:220px;border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;background:var(--surface);">
+        <div style="padding:10px 12px;font-family:DM Mono,monospace;font-size:8px;letter-spacing:2px;color:var(--mid)">PROPIEDADES</div>
+        <div id="popup-props-body" style="padding:0 8px 16px;">
+          <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--mid);padding:20px 8px;text-align:center">Selecciona un elemento del popup</div>
+        </div>
+      </div>
+    </div>
+    <!-- Barra de estado inferior -->
+    <div style="padding:6px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--surface);">
+      <span id="popup-el-count" style="font-family:DM Mono,monospace;font-size:9px;color:var(--mid)">0 elementos</span>
+      <span style="font-family:DM Mono,monospace;font-size:9px;color:var(--mid)">·</span>
+      <span id="popup-canvas-size-lbl" style="font-family:DM Mono,monospace;font-size:9px;color:var(--mid)">700 × 480 px</span>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para elegir tipo de elemento en popup -->
+<div id="modal-popup-add" style="display:none;position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,.5);">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);border:1px solid var(--border);border-radius:6px;width:520px;max-height:70vh;overflow-y:auto;padding:16px;">
+    <div style="display:flex;align-items:center;margin-bottom:12px;">
+      <span style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:3px;color:var(--mid);flex:1">AÑADIR ELEMENTO AL POPUP</span>
+      <button onclick="document.getElementById('modal-popup-add').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--mid);font-size:16px">×</button>
+    </div>
+    <div id="popup-add-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
+  </div>
+</div>
+
+</body>
+</html>

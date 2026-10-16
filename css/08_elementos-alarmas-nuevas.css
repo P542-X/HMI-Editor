@@ -1,0 +1,17 @@
+/* ══════════════════════════════════════════════
+   ALARMAS NUEVAS
+══════════════════════════════════════════════ */
+
+/* TICKER */
+.halarm-ticker { width:100%; height:100%; background:#0a0a08; border:1px solid #c62828; border-radius:3px; display:flex; align-items:center; gap:8px; overflow:hidden; padding:0 10px; }
+.halarm-ticker-icon { color:#c62828; font-size:13px; flex-shrink:0; }
+.halarm-ticker-wrap { flex:1; overflow:hidden; }
+.halarm-ticker-txt  { font-family:"DM Mono",monospace; font-size:10px; letter-spacing:1px; color:#ff5252; white-space:nowrap; animation:ticker-scroll 12s linear infinite; }
+@keyframes ticker-scroll { from { transform:translateX(100%); } to { transform:translateX(-100%); } }
+
+/* ALARM COUNT */
+.halarm-count { width:100%; height:100%; background:#fff; border:1px solid #d8d8d0; border-radius:3px; display:flex; align-items:center; gap:10px; padding:0 12px; overflow:hidden; }
+.halarm-count-bubble { min-width:36px; height:36px; border-radius:4px; background:#c62828; display:flex; align-items:center; justify-content:center; font-family:"DM Mono",monospace; font-size:18px; font-weight:700; color:#fff; flex-shrink:0; padding:0 8px; }
+.halarm-count-bubble.ok { background:#2e7d32; }
+.halarm-count-lbl { font-family:"DM Mono",monospace; font-size:9px; letter-spacing:2px; color:#6a6a62; }
+
